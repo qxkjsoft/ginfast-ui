@@ -467,7 +467,7 @@ const addFrom = ref<any>({
     isLink: false,
     link: "",
     iframe: false,
-    sort: 1
+    sort: 0
 });
 
 const title = ref("");
@@ -520,7 +520,7 @@ const afterClose = () => {
         isLink: false,
         link: "",
         iframe: false,
-        sort: 1
+        sort: 0
     };
 };
 // 修改

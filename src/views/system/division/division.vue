@@ -225,9 +225,9 @@ const handleOk = async () => {
 const afterClose = () => {
     formRef.value.resetFields();
     addFrom.value = {
-        parentId: 0,
+        parentId: undefined,
         name: "",
-        sort: 1,
+        sort: 0,
         leader: "",
         phone: "",
         email: "",
@@ -246,7 +246,7 @@ const onUpdate = (row: DivisionItem) => {
         leader: row.leader || "",
         phone: row.phone || "",
         email: row.email || "",
-        sort: row.sort || 1,
+        sort: row.sort || 0,
         describe: row.describe || ""
     };
     open.value = true;

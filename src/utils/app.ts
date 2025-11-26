@@ -48,7 +48,7 @@ export function handleUrl(url: string, baseUrl = '') {
     if (!url) {
         return ''
     }
-    if (url.startsWith("http") || url.startsWith("https")) {
+    if (url.startsWith("http") || url.startsWith("https") || url.startsWith("blob:")) {
         return url
     }
 
@@ -56,14 +56,16 @@ export function handleUrl(url: string, baseUrl = '') {
         baseUrl = import.meta.env.VITE_APP_BASE_URL
     }
 
+    // 规范化基础URL和路径
+    const normalizedBase = baseUrl.replace(/\/$/, '');
+    const normalizedPath = url.replace(/^\//, '');
+    const fullPath = `${normalizedBase}/${normalizedPath}`;
+
     if (baseUrl.startsWith("http") || baseUrl.startsWith("https")) {
-        return _.trimEnd(baseUrl, '/') + '/' + _.trimStart(url, "/")
+        return fullPath
     } else {
-        const u = new URL(window.location.href);
-        const protocol = u.protocol;
-        const domain = u.hostname;
-        const port = u.port !== "" ? `:${u.port}` : "";
-        return `${protocol}//${domain}${port}${_.trimEnd(baseUrl, '/')}/${_.trimStart(url, "/")}`
+        const origin = new URL(window.location.href).origin;
+        return `${origin}${fullPath}`
     }
 }
 

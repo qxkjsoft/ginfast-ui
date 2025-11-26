@@ -106,3 +106,17 @@ export const previewCode = (genId: number) => {
     params: { genId }
   });
 };
+
+
+/**
+ * 生成菜单
+ * @param genId 生成任务ID
+ * @returns 生成的代码
+ */
+export const insertmenuandapi = (genId: number) => {
+  return http.request<BaseResult<{
+    code: string;
+  }>>("post", baseUrlApi("codegen/insertmenuandapi"), {
+    data: { genId }
+  });
+};

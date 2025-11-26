@@ -100,7 +100,7 @@
         <CodegenConfigDrawer v-model:visible="editVisible" :record-id="currentEditId" @success="handleEditSuccess" />
 
         <!-- 代码预览模态框 -->
-        <a-modal v-model:visible="previewVisible" :title="previewTitle" width="100%" :body-style="{ padding: '0px', height: '600px', display: 'flex', flexDirection: 'column' }" :ok-text="null" :cancel-text="null">
+        <a-modal v-model:visible="previewVisible" :title="previewTitle" width="100%" :body-style="{ padding: '0px', height: '600px', display: 'flex', flexDirection: 'column' }" >
             <div class="preview-modal-container">
                 <!-- 加载状态 -->
                 <div v-if="previewLoading" class="preview-loading">
@@ -267,6 +267,13 @@
                     </div>
                 </div>
             </div>
+            
+            <template #footer>
+                <a-space>
+                    <a-button @click="closePreviewModal">退出</a-button>
+                    <a-button type="primary" v-hasPerm="['system:codegen:insertmenuandapi']" @click="generateMenuAndApi">生成菜单</a-button>
+                </a-space>
+            </template>
         </a-modal>
     </div>
 </template>
@@ -281,7 +288,7 @@ import {
     type SysGenListParams,
 } from "@/api/sysgen";
 
-import { generateCode, previewCode } from "@/api/syscodegen";
+import { generateCode, previewCode,insertmenuandapi } from "@/api/syscodegen";
 import { getTables, type TableInfo } from "@/api/syscodegen";
 import { formatTime } from "@/globals";
 import CodegenConfigDrawer from './components/codegen-config-drawer.vue';
@@ -527,6 +534,7 @@ const hasPreviewData = computed(() => {
 const onPreview = async (record: SysGenItem) => {
     previewVisible.value = true;
     previewTitle.value = `${record.name} - 代码预览`;
+    previewRecord.value = record; // 保存当前记录
     previewLoading.value = true;
     activeTab.value = "model";
     // 重置预览数据
@@ -581,10 +589,36 @@ const copyCode = (key: string) => {
     const code = previewData.value[key as keyof typeof previewData.value];
     if (code) {
         navigator.clipboard.writeText(code).then(() => {
-            arcoMessage("success", "代码已复制到剪贴板");
+            arcoMessage("success", "代码已复制到剂贴板");
         }).catch(() => {
             arcoMessage("error", "复制失败，请手动复制");
         });
+    }
+};
+
+// 保存当前预览的记录
+const previewRecord = ref<SysGenItem | null>(null);
+
+// 退出预览模态框
+const closePreviewModal = () => {
+    previewVisible.value = false;
+    previewRecord.value = null; // 重置记录
+};
+
+// 生成菜单
+const generateMenuAndApi = async () => {
+    if (!previewRecord.value) {
+        arcoMessage("warning", "找不到所选表配置");
+        return;
+    }
+    try {
+        await insertmenuandapi(previewRecord.value.id);
+        arcoMessage("success", "菜单生成成功");
+        previewVisible.value = false;
+        getSysGenList(); // 刷新列表
+    } catch (error) {
+        console.error("菜单生成失败:", error);
+        arcoMessage("error", "菜单生成失败");
     }
 };
 

@@ -1,16 +1,26 @@
 <template>
     <a-space direction="vertical" :style="{ width: '100%' }">
         <a-upload :action="uploadUrl" :fileList="fileList" :show-file-list="false" @change="onChange" :accept="accept"
-            @progress="onProgress" :custom-request="handleUpload">
+            @progress="onProgress" :custom-request="handleUpload" :disabled="disabled">
             <template #upload-button>
-                <div
-                    :class="`arco-upload-list-item${file && file.status === 'error' ? ' arco-upload-list-item-error' : ''}`">
+                <div :class="`arco-upload-list-item${file && file.status === 'error' ? ' arco-upload-list-item-error' : ''}`">
                     <div class="arco-upload-list-picture custom-upload-avatar" v-if="file && file.url"
                         :style="{ width: typeof width === 'number' ? width + 'px' : width, height: typeof height === 'number' ? height + 'px' : height }">
                         <img :src="handleUrl(file.url)"
                             :style="{ width: typeof width === 'number' ? width + 'px' : width, height: typeof height === 'number' ? height + 'px' : height }" />
                         <div class="arco-upload-list-picture-mask">
-                            <IconEdit />
+                            <div class="action-buttons">
+                                <a-tooltip content="更换">
+                                    <a-button type="text" size="mini">
+                                        <IconEdit />
+                                    </a-button>
+                                </a-tooltip>
+                                <a-tooltip content="删除">
+                                    <a-button type="text" size="mini" @click.stop="handleRemove" status="danger">
+                                        <IconDelete />
+                                    </a-button>
+                                </a-tooltip>
+                            </div>
                         </div>
                         <a-progress v-if="file.status === 'uploading' && file.percent < 100" :percent="file.percent"
                             type="circle" size="mini" :style="{
@@ -21,10 +31,11 @@
                             }" />
                     </div>
                     <div class="arco-upload-picture-card" v-else
-                        :style="{ width: typeof width === 'number' ? width + 'px' : width, height: typeof height === 'number' ? height + 'px' : height }">
+                        :style="{ width: typeof width === 'number' ? width + 'px' : width, height: typeof height === 'number' ? height + 'px' : height }"
+                        :class="{ 'upload-disabled': disabled }">
                         <div class="arco-upload-picture-card-text">
                             <IconPlus />
-                            <div style="font-weight: 600">{{ title }}</div>
+                            <div style="font-weight: 600;font-size: 12px;">{{ title }}</div>
                         </div>
                     </div>
                 </div>
@@ -35,19 +46,19 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { IconEdit, IconPlus } from '@arco-design/web-vue/es/icon';
+import { IconEdit, IconPlus, IconDelete } from '@arco-design/web-vue/es/icon';
 import { uploadAffixAPI } from '@/api/file';
 import { Message } from '@arco-design/web-vue';
 import { handleUrl } from "@/utils/app";
 // 定义组件属性
 const props = defineProps({
-    imageUrl: {
+    modelValue: {
         type: String,
         default: ''
     },
     title: {
         type: String,
-        default: 'Upload'
+        default: '上传图片'
     },
     accept: {
         type: String,
@@ -60,18 +71,22 @@ const props = defineProps({
     height: {
         type: [String, Number],
         default: 120
+    },
+    disabled: {
+        type: Boolean,
+        default: false
     }
 });
 
 // 定义事件
-const emit = defineEmits(['update:imageUrl']);
+const emit = defineEmits(['update:modelValue', 'change', 'success', 'error']);
 
 // 文件状态
 const file = ref<any>(null);
 const fileList = ref<any[]>([]);
 
 // 监听图片URL变化
-watch(() => props.imageUrl, (newUrl) => {
+watch(() => props.modelValue, (newUrl) => {
     if (newUrl) {
         file.value = {
             url: newUrl,
@@ -88,16 +103,9 @@ watch(() => props.imageUrl, (newUrl) => {
 const uploadUrl = '/'; // 占位符，实际不会使用
 
 // 处理文件变化
-const onChange = (_: any, currentFile: any) => {
-    file.value = {
-        ...currentFile,
-        url: currentFile?.file?.status === 'done' ? currentFile?.response?.data?.url : currentFile?.url
-    };
-
-    // 如果上传成功，更新父组件的URL
-    if (currentFile?.file?.status === 'done' && currentFile?.response?.data?.url) {
-        emit('update:imageUrl', currentFile.response.data.url);
-    }
+const onChange = (fileList: any[], currentFile: any) => {
+    // 触发change事件
+    emit('change', currentFile);
 };
 
 // 处理上传进度
@@ -111,6 +119,12 @@ const handleUpload = async (options: any) => {
     const formData = new FormData();
     formData.append("file", fileItem.file);
 
+    // 设置上传中状态
+    file.value = {
+        ...fileItem,
+        status: 'uploading',
+        percent: 0
+    };
     try {
         const res: any = await uploadAffixAPI(formData);
         if (res.code === 0) {
@@ -127,7 +141,9 @@ const handleUpload = async (options: any) => {
             fileList.value = [uploadedFile];
 
             // 通知父组件更新URL
-            emit('update:imageUrl', res.data.url);
+            emit('update:modelValue', res.data.url);
+            emit('success', res.data.url);
+            emit('change', uploadedFile);
             onSuccess(res);
         } else {
             throw new Error(res.message || '上传失败');
@@ -138,8 +154,20 @@ const handleUpload = async (options: any) => {
             ...fileItem,
             status: 'error'
         };
+        emit('error', error);
+        emit('change', file.value);
         onError(error);
     }
+};
+
+// 删除图片
+const handleRemove = () => {
+    // 确认删除
+    file.value = null;
+    fileList.value = [];
+    emit('update:modelValue', '');
+    emit('change', null);
+    Message.success('删除成功');
 };
 </script>
 
@@ -171,6 +199,11 @@ const handleUpload = async (options: any) => {
     transition: opacity 0.2s;
 }
 
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
 .arco-upload-list-picture:hover .arco-upload-list-picture-mask {
     opacity: 1;
 }
@@ -184,9 +217,19 @@ const handleUpload = async (options: any) => {
     transition: all 0.2s;
 }
 
-.arco-upload-picture-card:hover {
+.arco-upload-picture-card:hover:not(.upload-disabled) {
     border-color: var(--color-primary);
     background-color: var(--color-primary-light-1);
+}
+
+.upload-disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.upload-disabled:hover {
+    border-color: var(--color-border-2);
+    background-color: var(--color-fill-2);
 }
 
 .arco-upload-picture-card-text {

@@ -188,7 +188,7 @@ const layoutMode = computed(() => {
       layout: "vertical"
     },
     desktop: {
-      width: "40%",
+      width: "50%",
       layout: "horizontal"
     }
   };

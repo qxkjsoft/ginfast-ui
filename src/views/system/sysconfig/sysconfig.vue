@@ -24,7 +24,7 @@
                                     <a-form-item field="systemLogo" label="系统Logo">
                                         <!-- 图片上传组件 -->
                                         <ImageUpload :width="50" :height="50"
-                                            v-model:image-url="configData.system.systemLogo" :title="'系统Logo'"
+                                            v-model="configData.system.systemLogo" :title="'系统Logo'"
                                             :accept="'.svg'" />
                                         <template #extra>
                                             <div>显示在登录页面和系统导航栏的网站图标（建议 .svg 格式）</div>
@@ -35,7 +35,7 @@
                                     <a-form-item field="systemIcon" label="系统图标">
                                         <!-- 图片上传组件 -->
                                         <ImageUpload :width="50" :height="50"
-                                            v-model:image-url="configData.system.systemIcon" :title="'系统图标'"
+                                            v-model="configData.system.systemIcon" :title="'系统图标'"
                                             :accept="'.ico'" />
                                         <template #extra>
                                             <div>浏览器标签页显示的网站图标（建议 .ico 格式）</div>
@@ -189,7 +189,7 @@
 import { ref, onMounted } from 'vue';
 import { useSysConfigStore } from '@/store/modules/sys-config';
 // 引入图片上传组件
-import ImageUpload from './components/image-upload.vue';
+import ImageUpload from '@/components/upload/image-upload.vue';
 import { useDevicesSize } from "@/hooks/useDevicesSize";
 const { isMobile } = useDevicesSize();
 const layoutMode = computed(() => {

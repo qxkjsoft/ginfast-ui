@@ -84,7 +84,7 @@
                     <a-table-column title="API分组" data-index="apiGroup" :width="150" ellipsis tooltip></a-table-column>
                     <a-table-column title="创建时间" data-index="createdAt" :width="170">
                         <template #cell="{ record }">
-                            {{ formatDate(record.createdAt) }}
+                            {{ formatTime(record.createdAt, "YYYY-MM-DD") }}
                         </template>
                     </a-table-column>
                 </template>
@@ -96,6 +96,7 @@
 <script setup lang="ts">
 import { getSysApiListAPI, getMenuApisAPI, setMenuApisAPI, type SysApiItem, type SysApiListParams } from "@/api/sysapi";
 import { useDevicesSize } from "@/hooks/useDevicesSize";
+import { formatTime } from "@/globals";
 const { isMobile } = useDevicesSize();
 const layoutMode = computed(() => {
   let info = {
@@ -156,7 +157,8 @@ const searchForm = ref<SysApiListParams>({
     method: "",
     apiGroup: "",
     pageNum: 1,
-    pageSize: 10
+    pageSize: 10,
+    order: "id DESC"
 });
 
 // 分页配置
@@ -194,7 +196,7 @@ const loadApiList = async () => {
         if (showSelectedOnly.value && props.menuId) {
             params.menuId = props.menuId;
         }
-
+        console.log("获取API列表参数:", params);
         const res = await getSysApiListAPI(params);
         apiList.value = res.data.list;
         pagination.value.total = res.data.total;
@@ -230,16 +232,23 @@ const handleSearch = () => {
 
 // 重置搜索
 const handleReset = () => {
+    resetSearchForm();
+    handleSearch();
+};
+
+const resetSearchForm = () => {
     searchForm.value = {
         title: "",
         path: "",
         method: "",
         apiGroup: "",
         pageNum: 1,
-        pageSize: 10
+        pageSize: 10,
+        order: "id DESC"
     };
-    handleSearch();
 };
+
+
 
 // 处理分页变化
 const handlePageChange = (page: number) => {
@@ -312,11 +321,11 @@ const getMethodColor = (method: string): string => {
     return colors[method] || "gray";
 };
 
-// 格式化日期
-const formatDate = (dateString: string): string => {
-    if (!dateString) return "";
-    return new Date(dateString).toLocaleString("zh-CN");
-};
+// // 格式化日期
+// const formatDate = (dateString: string): string => {
+//     if (!dateString) return "";
+//     return new Date(dateString).toLocaleString("zh-CN");
+// };
 
 // 确认操作
 const handleOk = async () => {
@@ -369,14 +378,7 @@ watch(
             showSelectedOnly.value = props.showSelected;
 
             // 重置搜索表单
-            searchForm.value = {
-                title: "",
-                path: "",
-                method: "",
-                apiGroup: "",
-                pageNum: 1,
-                pageSize: 10
-            };
+            resetSearchForm();
             pagination.value.current = 1;
 
             // 加载数据

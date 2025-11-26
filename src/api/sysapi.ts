@@ -36,6 +36,7 @@ export interface SysApiListParams {
     method?: string;
     apiGroup?: string;
     menuId?: number;
+    order?: string;
 }
 
 // 新增API参数
