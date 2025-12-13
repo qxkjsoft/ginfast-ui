@@ -70,7 +70,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { IconEdit, IconPlus, IconDelete, IconFolder , IconEye} from '@arco-design/web-vue/es/icon';
+import {  IconPlus, IconDelete, IconFolder , IconEye} from '@arco-design/web-vue/es/icon';
 import { uploadAffixAPI } from '@/api/file';
 import { Message } from '@arco-design/web-vue';
 import { handleUrl } from "@/utils/app";
@@ -137,6 +137,7 @@ const uploadUrl = '/'; // 占位符，实际不会使用
 
 // 处理文件变化
 const onChange = (fileList: any[], currentFile: any) => {
+    console.log(fileList)
     // 触发change事件
     emit('change', currentFile);
 };

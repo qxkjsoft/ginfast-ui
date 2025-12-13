@@ -35,9 +35,9 @@ export const getPluginsExportAPI = () => {
 
 // 导出插件为压缩包
 export const exportPluginAPI = (folderName: string) => {
-  return http.request<Blob>("get", baseUrlApi(`pluginsmanager/export?folderName=${encodeURIComponent(folderName)}`), undefined, {
+  return http.request<Blob>("post", baseUrlApi("pluginsmanager/export"), { data: {folderName} } as any, {
     responseType: 'blob'
-  });
+  } as any);
 };
 
 // 插件导入请求参数
@@ -58,4 +58,9 @@ export const importPluginAPI = (file: File, params: PluginImportRequest) => {
   formData.append('checkExist', params.checkExist ? '1' : '0');
   
   return http.request<any>("post", baseUrlApi("pluginsmanager/import"), { data: formData, headers: { 'Content-Type': 'multipart/form-data' } });
+};
+
+
+export const deletePluginAPI  = (folderName: string) => {
+    return http.request<BaseResult>("delete", baseUrlApi(`pluginsmanager/uninstall?folderName=${encodeURIComponent(folderName)}`));
 };

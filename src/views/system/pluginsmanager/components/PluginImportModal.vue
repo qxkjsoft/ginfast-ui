@@ -43,10 +43,10 @@
         <a-space direction="vertical" fill>
           <div>
             <a-checkbox v-model="importParams.checkExist">
-              <span style="margin-left: 8px;">检查文件及数据库是否已存在</span>
+              <span style="margin-left: 8px;">检查文件及数据库是否已存在，依赖是否正确</span>
             </a-checkbox>
             <p style="color: #999; margin-left: 24px; font-size: 12px; margin-top: 4px;">
-              勾选后将检查文件和数据库表是否已存在，防止数据覆盖
+              勾选后将检查文件和数据库表是否已存在，依赖是否正确，检查通过后才会导入否则会提示错误信息
             </p>
           </div>
           <div>
@@ -129,9 +129,9 @@ const isDragging = ref(false)
 const importLoading = ref(false)
 const importParams = ref<PluginImportRequest>({
   checkExist: true,
-  overwriteFiles: false,
-  overwriteDB: false,
-  importMenu: false
+  overwriteFiles: true,
+  overwriteDB: true,
+  importMenu: true
 })
 
 // 格式化文件大小
@@ -156,9 +156,9 @@ const resetForm = () => {
   importLoading.value = false
   importParams.value = {
     checkExist: true,
-    overwriteFiles: false,
-    overwriteDB: false,
-    importMenu: false
+    overwriteFiles: true,
+    overwriteDB: true,
+    importMenu: true
   }
   if (fileInput.value) {
     fileInput.value.value = ''

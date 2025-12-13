@@ -94,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
+import { ref, watch } from 'vue';
 import { IconPlus, IconEye, IconDelete, IconFolder } from '@arco-design/web-vue/es/icon';
 import { uploadAffixAPI } from '@/api/file';
 import { Message } from '@arco-design/web-vue';
