@@ -30,8 +30,13 @@
                 </a-tag>
             </a-space>
 
-            <!-- 搜索框 -->
+            <!-- 类型筛选 + 搜索框 -->
             <div class="sync-search">
+                <a-radio-group v-model="syncTypeFilter" type="button" size="small">
+                    <a-radio value="all">全部</a-radio>
+                    <a-radio value="system">系统路由</a-radio>
+                    <a-radio value="plugin">插件路由</a-radio>
+                </a-radio-group>
                 <a-input v-model="syncSearchKey" placeholder="搜索API路径" allow-clear style="width: 280px">
                     <template #prefix><icon-search /></template>
                 </a-input>
@@ -150,12 +155,23 @@ const syncResult = ref<SyncPreviewResult>({
 });
 // 搜索关键词（仅匹配路径，不区分大小写）
 const syncSearchKey = ref("");
+// 路由类型筛选：all=全部 / system=系统路由 / plugin=插件路由
+const syncTypeFilter = ref<"all" | "system" | "plugin">("all");
 // 用户勾选的行 key 列表（格式 "path|method"）
 const syncSelectedKeys = ref<string[]>([]);
 
-// 表格显示的明细（跳过行=已存在于库中，不展示；叠加搜索关键词过滤）
+// 插件路由判定：后端插件路由固定注册在 /api/plugins/<插件名> 分组下。
+// 以不可编辑的 path 为依据（apiGroup 可被内联编辑，不是稳定字段）
+const isPluginRoute = (item: SyncItem) => item.path.toLowerCase().startsWith("/api/plugins/");
+
+// 表格显示的明细（跳过行=已存在于库中，不展示；叠加类型筛选与搜索关键词过滤）
 const filteredSyncDetails = computed<SyncItem[]>(() => {
     let list = syncResult.value.details.filter((item) => item.action !== "skip");
+    if (syncTypeFilter.value === "plugin") {
+        list = list.filter((item) => isPluginRoute(item));
+    } else if (syncTypeFilter.value === "system") {
+        list = list.filter((item) => !isPluginRoute(item));
+    }
     const kw = syncSearchKey.value.trim().toLowerCase();
     if (kw) {
         list = list.filter((item) => item.path.toLowerCase().includes(kw));
@@ -247,6 +263,7 @@ const onSyncClose = () => {
     };
     syncSelectedKeys.value = [];
     syncSearchKey.value = "";
+    syncTypeFilter.value = "all";
 };
 
 // 确认同步
@@ -301,6 +318,9 @@ const onConfirmSync = async () => {
     }
 
     .sync-search {
+        display: flex;
+        align-items: center;
+        gap: 12px;
         margin-bottom: 12px;
     }
 

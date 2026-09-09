@@ -84,7 +84,7 @@
                             </a-space>
                         </template>
                     </a-table-column>
-                    <a-table-column title="ID" data-index="id" :width="75" tooltip ellipsis></a-table-column>
+                    <a-table-column title="ID" data-index="id" :width="100" tooltip ellipsis></a-table-column>
                     <a-table-column title="类型" align="center" :width="70">
                         <template #cell="{ record }">
                             <a-tag v-if="record.type == 1" bordered size="small" color="purple">目录</a-tag>
