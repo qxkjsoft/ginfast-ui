@@ -14,6 +14,7 @@ export interface AffixItem {
     updatedAt: string;
     url: string;
     suffix: string;
+    thumbnailUrl?: string;
 }
 
 // 文件列表响应

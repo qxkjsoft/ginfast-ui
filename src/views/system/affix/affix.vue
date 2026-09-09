@@ -37,6 +37,13 @@
                 @page-size-change="handlePageSizeChange">
                 <template #columns>
                     <a-table-column title="ID" data-index="id" :width="70" align="center"></a-table-column>
+                    <a-table-column title="缩略图" :width="100" align="center">
+                        <template #cell="{ record }">
+                            <a-image v-if="record.ftype === 'image'" :src="handleUrl(record.thumbnailUrl || record.url)"
+                                fit="contain" width="60" height="60" style="border-radius: 4px" />
+                            <span v-else>-</span>
+                        </template>
+                    </a-table-column>
                     <a-table-column title="文件名" data-index="name" :ellipsis="true" tooltip
                         :width="200"></a-table-column>
                     <a-table-column title="文件类型" data-index="ftype" :width="90">
