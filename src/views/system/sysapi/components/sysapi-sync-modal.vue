@@ -5,6 +5,16 @@
             <a-space>
                 <icon-sync />
                 <span>路由同步预览</span>
+                <a-popover position="bottom" title="统计说明" content-class="sync-help-content"
+                    :content-style="{ maxWidth: '380px' }">
+                    <icon-question-circle class="sync-help-icon" />
+                    <template #content>
+                        <p><b>总计</b>：实际参与对比的候选路由数（已存在于库中的不同步、不在明细中展示）</p>
+                        <p><b>新增</b>：代码中有、数据库中无（含恢复曾被软删除的行），同步时写入</p>
+                        <p>明细中的中文名/分组可直接编辑，同步以编辑后的值为准；重新预览会恢复推导值</p>
+                        <p><b>孤儿</b>：数据库有、代码中已不存在，可手动删除，仅提示不自动清理</p>
+                    </template>
+                </a-popover>
             </a-space>
         </template>
         <div class="sync-modal-body">
@@ -12,41 +22,12 @@
             <a-space wrap class="sync-stats">
                 <a-tag color="arcoblue">总计 {{ syncResult.total }}</a-tag>
                 <a-tag color="green">新增 {{ syncResult.inserted }}</a-tag>
-                <a-tag color="orange">更新 {{ syncResult.updated }}</a-tag>
-                <a-tag color="gray">跳过 {{ syncResult.skipped }}</a-tag>
-                <a-tag>过滤 {{ syncResult.filtered }}</a-tag>
                 <a-tag v-if="syncResult.orphanList && syncResult.orphanList.length" color="red">
                     孤儿 {{ syncResult.orphanList.length }}
                 </a-tag>
                 <a-tag v-if="syncSelectedKeys.length" color="purple">
                     已选 {{ syncSelectedKeys.length }}
                 </a-tag>
-            </a-space>
-
-            <!-- 选项开关 -->
-            <a-space wrap class="sync-options">
-                <a-tooltip content="启用后，已存在的 API 的标题/分组将被代码推导值覆盖；否则只新增、保留手工修改">
-                    <a-switch v-model="syncOptions.overwrite" type="round">
-                        <template #checked>覆盖已存在</template>
-                        <template #unchecked>仅新增(幂等)</template>
-                    </a-switch>
-                </a-tooltip>
-                <a-tooltip content="是否纳入 /api/plugins/* 路由">
-                    <a-switch v-model="syncOptions.includePlugins" type="round">
-                        <template #checked>含插件</template>
-                        <template #unchecked>仅核心</template>
-                    </a-switch>
-                </a-tooltip>
-                <a-tooltip content="插件路由分组是否带 plugins/ 前缀">
-                    <a-switch v-model="syncOptions.groupByPlugin" type="round">
-                        <template #checked>分组含前缀</template>
-                        <template #unchecked>仅插件名</template>
-                    </a-switch>
-                </a-tooltip>
-                <a-switch v-model="showSkipRows" type="round">
-                    <template #checked>显示全部</template>
-                    <template #unchecked>隐藏跳过</template>
-                </a-switch>
             </a-space>
 
             <!-- 搜索框 -->
@@ -60,22 +41,26 @@
             <a-table row-key="syncKey" :data="syncTableData" :bordered="{ cell: true }"
                 :loading="syncPreviewLoading" :pagination="{ pageSize: 10, showTotal: true }"
                 :scroll="{ y: '360px' }" v-model:selectedKeys="syncSelectedKeys"
-                :row-selection="{ type: 'checkbox', showCheckedAll: true }"
-                :row-class="getSyncRowClass">
+                :row-selection="{ type: 'checkbox', showCheckedAll: true }">
                 <template #columns>
-                    <a-table-column title="动作" :width="90" align="center">
-                        <template #cell="{ record }">
-                            <a-tag :color="getActionColor(record.action)">{{ getActionText(record.action) }}</a-tag>
-                        </template>
-                    </a-table-column>
                     <a-table-column title="API路径" data-index="path" :width="240" ellipsis tooltip></a-table-column>
                     <a-table-column title="方法" :width="90" align="center">
                         <template #cell="{ record }">
                             <a-tag :color="getMethodColor(record.method)">{{ record.method }}</a-tag>
                         </template>
                     </a-table-column>
-                    <a-table-column title="中文名" data-index="title" :width="160" ellipsis tooltip></a-table-column>
-                    <a-table-column title="分组" data-index="apiGroup" :width="140" ellipsis tooltip></a-table-column>
+                    <a-table-column title="中文名" :width="180">
+                        <template #cell="{ record }">
+                            <a-input :model-value="record.title" size="small" placeholder="中文名"
+                                @update:model-value="onEditDetail(record, 'title', $event)" />
+                        </template>
+                    </a-table-column>
+                    <a-table-column title="分组" :width="160">
+                        <template #cell="{ record }">
+                            <a-input :model-value="record.apiGroup" size="small" placeholder="分组"
+                                @update:model-value="onEditDetail(record, 'apiGroup', $event)" />
+                        </template>
+                    </a-table-column>
                 </template>
             </a-table>
 
@@ -95,6 +80,16 @@
                             </a-table-column>
                             <a-table-column title="中文名" data-index="title" :width="160" ellipsis tooltip></a-table-column>
                             <a-table-column title="分组" data-index="apiGroup" :width="140" ellipsis tooltip></a-table-column>
+                            <a-table-column title="操作" :width="80" align="center">
+                                <template #cell="{ record }">
+                                    <a-popconfirm content="确定删除该孤儿路由吗？删除后将同时清理角色对该接口的权限。"
+                                        type="warning" @ok="onDeleteOrphan(record)">
+                                        <a-button type="text" status="danger" size="mini">
+                                            <template #icon><icon-delete /></template>
+                                        </a-button>
+                                    </a-popconfirm>
+                                </template>
+                            </a-table-column>
                         </template>
                     </a-table>
                 </a-collapse-item>
@@ -105,11 +100,11 @@
 
 <script setup lang="ts">
 import {
+    deleteSysApiAPI,
     previewSysApiRoutesAPI,
     syncSysApiRoutesAPI,
     type SyncItem,
-    type SyncPreviewResult,
-    type SysApiSyncParams
+    type SyncPreviewResult
 } from "@/api/sysapi";
 import { Message } from "@arco-design/web-vue";
 
@@ -144,40 +139,23 @@ watch(modalVisible, (val) => {
 
 const syncPreviewLoading = ref(false);
 const syncLoading = ref(false);
-// 同步选项（默认全开）
-const syncOptions = reactive<SysApiSyncParams>({
-    overwrite: true,
-    includePlugins: true,
-    groupByPlugin: true
-});
 // 预览结果
 const syncResult = ref<SyncPreviewResult>({
     total: 0,
     inserted: 0,
-    updated: 0,
     skipped: 0,
     filtered: 0,
     details: [],
     orphanList: []
 });
-// 是否显示已跳过的行（默认隐藏）
-const showSkipRows = ref(false);
 // 搜索关键词（仅匹配路径，不区分大小写）
 const syncSearchKey = ref("");
 // 用户勾选的行 key 列表（格式 "path|method"）
 const syncSelectedKeys = ref<string[]>([]);
 
-// skip 行禁用勾选的样式 class
-const getSyncRowClass = (record: SyncItem) => {
-    return record.action === "skip" ? "sync-row-disabled" : "";
-};
-
-// 表格显示的明细（叠加 showSkipRows + 搜索关键词过滤）
+// 表格显示的明细（跳过行=已存在于库中，不展示；叠加搜索关键词过滤）
 const filteredSyncDetails = computed<SyncItem[]>(() => {
-    let list = syncResult.value.details;
-    if (!showSkipRows.value) {
-        list = list.filter((item) => item.action !== "skip");
-    }
+    let list = syncResult.value.details.filter((item) => item.action !== "skip");
     const kw = syncSearchKey.value.trim().toLowerCase();
     if (kw) {
         list = list.filter((item) => item.path.toLowerCase().includes(kw));
@@ -193,6 +171,33 @@ const syncTableData = computed(() => {
         syncKey: item.path + "|" + item.method
     }));
 });
+
+// 内联编辑回写：直接修改 syncResult.details 中对应项（按 path|method 定位），
+// 搜索过滤重建行时编辑不丢失，同步时随 items 提交最终值
+const onEditDetail = (record: SyncItem, field: "title" | "apiGroup", value: string) => {
+    const target = syncResult.value.details.find(
+        (item) => item.path === record.path && item.method === record.method
+    );
+    if (target) {
+        target[field] = value;
+    }
+};
+
+// 删除孤儿路由：复用 API 管理的删除接口（后端会连带清理 Casbin 权限与菜单关联）
+const onDeleteOrphan = async (record: SyncItem) => {
+    if (!record.id) return;
+    try {
+        await deleteSysApiAPI({ id: record.id });
+        syncResult.value.orphanList = (syncResult.value.orphanList || []).filter(
+            (item) => !(item.path === record.path && item.method === record.method)
+        );
+        Message.success(`已删除孤儿路由：${record.path}`);
+        emit("success");
+    } catch (error) {
+        console.error("删除孤儿路由失败", error);
+        Message.error("删除孤儿路由失败");
+    }
+};
 
 // 孤儿表格也注入 syncKey（与主表一致，避免 row-key 冲突警告）
 const orphanTableData = computed(() => {
@@ -214,35 +219,11 @@ const getMethodColor = (method: string) => {
     return colorMap[method] || "gray";
 };
 
-// 获取动作文本
-const getActionText = (action: string) => {
-    const map: Record<string, string> = {
-        insert: "新增",
-        update: "更新",
-        skip: "跳过"
-    };
-    return map[action] || action;
-};
-
-// 获取动作颜色
-const getActionColor = (action: string) => {
-    const map: Record<string, string> = {
-        insert: "green",
-        update: "orange",
-        skip: "gray"
-    };
-    return map[action] || "gray";
-};
-
 // 加载预览数据
 const loadSyncPreview = async () => {
     syncPreviewLoading.value = true;
     try {
-        const { data } = await previewSysApiRoutesAPI({
-            overwrite: syncOptions.overwrite,
-            includePlugins: syncOptions.includePlugins,
-            groupByPlugin: syncOptions.groupByPlugin
-        });
+        const { data } = await previewSysApiRoutesAPI();
         syncResult.value = data;
         // 预览刷新后清空勾选（默认全不选，用户手动勾选）
         syncSelectedKeys.value = [];
@@ -254,22 +235,11 @@ const loadSyncPreview = async () => {
     }
 };
 
-// 选项变化自动重新预览
-watch(
-    () => ({ ...syncOptions }),
-    () => {
-        if (modalVisible.value) {
-            loadSyncPreview();
-        }
-    }
-);
-
 // 关闭弹窗
 const onSyncClose = () => {
     syncResult.value = {
         total: 0,
         inserted: 0,
-        updated: 0,
         skipped: 0,
         filtered: 0,
         details: [],
@@ -286,15 +256,26 @@ const onConfirmSync = async () => {
         Message.warning("请勾选要同步的路由");
         return false;
     }
+    // 取勾选行的最终值（含内联编辑），中文名/分组为空则阻止提交
+    const selected = syncResult.value.details.filter((item) =>
+        syncSelectedKeys.value.includes(item.path + "|" + item.method)
+    );
+    if (selected.some((item) => !item.title.trim() || !item.apiGroup.trim())) {
+        Message.warning("勾选路由的中文名与分组不能为空");
+        return false;
+    }
     syncLoading.value = true;
     try {
         const { data } = await syncSysApiRoutesAPI({
-            overwrite: syncOptions.overwrite,
-            includePlugins: syncOptions.includePlugins,
-            groupByPlugin: syncOptions.groupByPlugin,
-            selectedKeys: syncSelectedKeys.value
+            selectedKeys: syncSelectedKeys.value,
+            items: selected.map(({ path, method, title, apiGroup }) => ({
+                path,
+                method,
+                title,
+                apiGroup
+            }))
         });
-        Message.success(`同步成功：新增 ${data.inserted} 条，更新 ${data.updated} 条`);
+        Message.success(`同步成功：新增 ${data.inserted} 条`);
         emit("success");
         return true;
     } catch (error) {
@@ -308,16 +289,15 @@ const onConfirmSync = async () => {
 </script>
 
 <style lang="scss" scoped>
+// 标题问号图标（悬浮气泡触发器）
+.sync-help-icon {
+    color: var(--color-text-3);
+    cursor: help;
+}
+
 .sync-modal-body {
     .sync-stats {
         margin-bottom: 12px;
-    }
-
-    .sync-options {
-        margin-bottom: 12px;
-        padding: 8px 12px;
-        background: var(--color-fill-1);
-        border-radius: 4px;
     }
 
     .sync-search {
@@ -327,13 +307,15 @@ const onConfirmSync = async () => {
     .sync-orphan {
         margin-top: 12px;
     }
+}
+</style>
 
-    // skip 行禁用勾选框
-    :deep(.sync-row-disabled) {
-        .arco-checkbox {
-            pointer-events: none;
-            opacity: 0.4;
-        }
+<style lang="scss">
+// 气泡内容挂载在 body 下，scoped 样式无法命中，需全局样式
+.sync-help-content {
+    p {
+        margin: 4px 0;
+        line-height: 1.6;
     }
 }
 </style>

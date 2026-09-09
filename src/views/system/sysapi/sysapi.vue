@@ -50,8 +50,13 @@
                     <a-table-column title="API分组" data-index="apiGroup" :width="100"></a-table-column>
                     <a-table-column title="关联的菜单" :width="170" ellipsis tooltip>
                         <template #cell="{ record }">
-                            {{record.sysMenuList ? record.sysMenuList.map((item: any) => item.id + '：' +
-                            item.title).join(', ') : '无'}}
+                            <template v-if="record.sysMenuList && record.sysMenuList.length">
+                                <span v-for="(item, index) in record.sysMenuList" :key="item.id">
+                                    <a-link @click="gotoMenu(item)">{{ item.id }}：{{ item.title }}</a-link>
+                                    <span v-if="Number(index) < record.sysMenuList.length - 1">, </span>
+                                </span>
+                            </template>
+                            <span v-else>无</span>
                         </template>
                     </a-table-column>
                     <a-table-column title="创建时间" data-index="createdAt" :width="180">
@@ -123,7 +128,12 @@ import SysApiSyncModal from "./components/sysapi-sync-modal.vue";
 import { Message } from "@arco-design/web-vue";
 import { formatTime } from "@/globals";
 import { useDevicesSize } from "@/hooks/useDevicesSize";
+import { useRouter } from "vue-router";
+import { type MenuItem } from "@/api/menu";
+import { useMenuLocate } from "@/hooks/useMenuLocate";
 const { isMobile } = useDevicesSize();
+const router = useRouter();
+const { setPendingMenuId } = useMenuLocate();
 const layoutMode = computed(() => {
   let info = {
     mobile: {
@@ -283,6 +293,12 @@ const onUpdate = async (row: SysApiItem) => {
         console.error("获取API详情失败", error);
         Message.error("获取API详情失败");
     }
+};
+
+// 跳转到菜单管理并定位关联菜单
+const gotoMenu = (menu: MenuItem) => {
+    setPendingMenuId(menu.id);
+    router.push("/system/menu");
 };
 
 // 提交表单

@@ -463,7 +463,9 @@ import useGlobalProperties from "@/hooks/useGlobalProperties";
 import { deepClone, getPascalCase } from "@/utils";
 import { useDevicesSize } from "@/hooks/useDevicesSize";
 import { Modal } from '@arco-design/web-vue';
+import { useMenuLocate } from "@/hooks/useMenuLocate";
 const { isMobile } = useDevicesSize();
+const { consumePendingMenuId } = useMenuLocate();
 const layoutMode = computed(() => {
   let info = {
     mobile: {
@@ -518,7 +520,7 @@ const performSearch = () => {
         const result: MenuItem[] = [];
         for (const menu of menus) {
             // 检查当前节点是否符合条件
-            const idMatch = !idFilter || (menu.id && menu.id.toString().includes(idFilter));
+            const idMatch = !idFilter || (menu.id && menu.id.toString() === idFilter);
             const nameMatch = !nameFilter || (menu.title && menu.title.includes(nameFilter));
             const pathMatch = !pathFilter || (menu.path && menu.path.includes(pathFilter));
             const permissionMatch = !permissionFilter || (menu.permission && menu.permission.includes(permissionFilter));
@@ -1096,8 +1098,25 @@ const onRestoreConfirm = () => {
     });
 };
 
-onMounted(() => {
-    getMenuList();
+// 消费跨页面定位请求（如从接口管理跳转）：自动填入搜索框并执行过滤
+const applyPendingMenuId = () => {
+    const id = consumePendingMenuId();
+    if (id == null) return;
+    form.value.id = String(id);
+    expand.value = true;
+    performSearch();
+};
+
+onMounted(async () => {
+    await getMenuList();
+    applyPendingMenuId();
+});
+
+// keepAlive 缓存实例再次进入时消费；首次挂载时数据未就绪，由 onMounted 兜底
+onActivated(() => {
+    if (allMenuList.value.length > 0) {
+        applyPendingMenuId();
+    }
 });
 
 
