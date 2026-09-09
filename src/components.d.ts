@@ -107,6 +107,7 @@ declare module 'vue' {
     SLayoutTools: typeof import('./components/s-layout-tools/index.vue')['default']
     SLogo: typeof import('./components/s-logo/index.vue')['default']
     SMainTransition: typeof import('./components/s-main-transition/index.vue')['default']
+    SMenuRestoreModal: typeof import('./components/s-menu-restore-modal/index.vue')['default']
     SQrcodeDraw: typeof import('./components/s-qrcode-draw/index.vue')['default']
     SRecorderPcm: typeof import('./components/s-recorder-pcm/index.vue')['default']
     SSelectIcon: typeof import('./components/s-select-icon/index.vue')['default']

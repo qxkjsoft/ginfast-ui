@@ -9,6 +9,7 @@ import { useRoutingMethod } from "@/hooks/useRoutingMethod";
 import { hasRefreshToken } from "@/utils/auth";
 import { useUserStoreHook } from "@/store/modules/user";
 import { useSystemStore } from "@/store/modules/system";
+import { useSysConfigStore } from "@/store/modules/sys-config";
 
 
 /**
@@ -54,6 +55,9 @@ router.beforeEach(async (to: any, _: any, next: any) => {
         return next("/home");
     }
 
+    // 菜单初始化引导页（全新部署菜单为空时的菜单恢复引导，全屏静态页）：走到这里说明已有token，直接放行
+    if (to.path === "/init") return next();
+
     const routeStore = useRouteConfigStore(pinia);
 
     const { routeTree } = storeToRefs(routeStore);
@@ -64,12 +68,23 @@ router.beforeEach(async (to: any, _: any, next: any) => {
     if (!routeTree.value.length) {
 
         try {
-            // 获取用户信息、路由信息(初始化)、字典数据
-            await Promise.all([useUserStoreHook().getUserInfo(), routeStore.initSetRouter()]);
+            // 获取用户信息、路由信息(初始化)、系统配置（menu.empty 用于全新部署的菜单恢复引导）、字典数据
+            await Promise.all([
+                useUserStoreHook().getUserInfo(),
+                routeStore.initSetRouter(),
+                useSysConfigStore().getConfig().catch((err: unknown) => {
+                    console.warn("获取系统配置失败:", err);
+                })
+            ]);
             useSystemStore().setDictData().catch((err: Error) => {
                 console.warn("字典数据加载失败:", err);
             });
             if (!routeTree.value.length) {
+                // 菜单表为空（全新部署）：进入菜单恢复引导页，恢复完成后自动进入系统
+                if (useSysConfigStore().menuEmpty) {
+                    console.warn("菜单为空，进入菜单恢复引导页");
+                    return next("/init");
+                }
                 console.warn("路由初始化失败，routeTree为空");
                 // 跳转到401页面
                 return next("/401");

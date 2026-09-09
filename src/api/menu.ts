@@ -219,3 +219,8 @@ export const getMenuBackupListAPI = () => {
 export const restoreMenuAPI = (data: { filename: string }) => {
     return http.request<BaseResult<MenuRestoreResult>>("post", baseUrlApi("sysMenu/restore"), { data });
 };
+
+// 删除菜单备份文件（服务器至少保留一个备份文件，仅剩一个时后端拒绝删除）
+export const deleteMenuBackupAPI = (data: { filename: string }) => {
+    return http.request<BaseResult>("post", baseUrlApi("sysMenu/backupDelete"), { data });
+};

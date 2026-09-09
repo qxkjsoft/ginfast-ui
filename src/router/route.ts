@@ -78,6 +78,15 @@ export const notFoundAndNoPower = [
     }
   },
   {
+    path: "/init", // 全新部署菜单为空时的菜单恢复引导页（全屏）
+    name: "menu-init",
+    component: () => import(/* webpackChunkName: "init" */ "@/views/init/menu-init.vue"),
+    meta: {
+      title: "menu-init",
+      hide: true
+    }
+  },
+  {
     path: "/:path(.*)*", // 匹配任意路由，兜底，未找到页面的时候跳转该页面
     name: "not-found",
     component: () => import(/* webpackChunkName: "error" */ "@/views/error/404.vue"),

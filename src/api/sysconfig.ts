@@ -33,7 +33,10 @@ export interface TenantConfig {
     enabled: boolean;
 }
 
-
+// 菜单配置参数（后端返回菜单表状态，用于全新部署时的菜单恢复引导）
+export interface MenuConfig {
+    empty: boolean;
+}
 
 // 配置响应数据
 export interface ConfigResponseData {
@@ -41,6 +44,7 @@ export interface ConfigResponseData {
     captcha: CaptchaConfig;
     safe: SafeConfig;
     tenant?: TenantConfig;
+    menu?: MenuConfig;
 }
 
 // 配置请求参数

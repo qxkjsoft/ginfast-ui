@@ -8,6 +8,7 @@ import type {
     SafeConfig,
     CaptchaConfig,
     TenantConfig,
+    MenuConfig,
     ConfigRequestData
 } from "@/api/sysconfig";
 import { handleUrl } from "@/utils/app"
@@ -46,11 +47,17 @@ const sysConfigStore = () => {
     // 多租户配置数据（不持久化，每次启动以后端实时配置为准；老后端未返回该段时默认开启）
     const tenantConfig = ref<TenantConfig>({ enabled: true });
 
+    // 菜单配置数据（不持久化；老后端未返回该段时默认菜单非空，不触发恢复引导）
+    const menuConfig = ref<MenuConfig>({ empty: false });
+
     // 配置加载状态
     const loading = ref(false);
 
     // 多租户是否开启
     const tenantEnabled = computed(() => tenantConfig.value.enabled);
+
+    // 菜单表是否为空（全新部署未恢复菜单时为 true）
+    const menuEmpty = computed(() => menuConfig.value.empty);
 
     // 处理后的系统Logo URL
     const systemLogo = computed(() => {
@@ -73,6 +80,7 @@ const sysConfigStore = () => {
                 safeConfig.value = data.safe || safeConfig.value;
                 captchaConfig.value = data.captcha || captchaConfig.value;
                 tenantConfig.value = data.tenant || tenantConfig.value;
+                menuConfig.value = data.menu || menuConfig.value;
             }
 
             return data;
@@ -140,6 +148,10 @@ const sysConfigStore = () => {
         tenantConfig.value = {
             enabled: true
         };
+
+        menuConfig.value = {
+            empty: false
+        };
     }
 
     return {
@@ -147,7 +159,9 @@ const sysConfigStore = () => {
         safeConfig,
         captchaConfig,
         tenantConfig,
+        menuConfig,
         tenantEnabled,
+        menuEmpty,
         loading,
         systemLogo,
         systemIcon,
