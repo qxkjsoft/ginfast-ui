@@ -101,6 +101,7 @@
 </template>
 
 <script setup lang="ts">
+import { STATUS_OPTIONS } from "@/config/dictOptions";
 import { deepClone } from "@/utils";
 import { formatTime } from "@/globals";
 import {
@@ -130,7 +131,8 @@ const layoutMode = computed(() => {
     return isMobile.value ? info.mobile : info.desktop;
 });
 
-const openState = ref(dictFilter("status"));
+// 固定字典选项统一在 @/config/dictOptions 管理（status 作为 query 参数传后端，数字值兼容）
+const openState = ref(STATUS_OPTIONS);
 const form = ref<ParamListParams>({
     name: "",
     code: "",

@@ -152,6 +152,7 @@
 </template>
 
 <script setup lang="ts">
+import { STATUS_OPTIONS } from "@/config/dictOptions";
 import { type ConvertedRouteItem, getMenuListAPI, convertMenuItemsToRoutes } from "@/api/menu";
 import {
     type RoleItem,
@@ -184,7 +185,8 @@ const layoutMode = computed(() => {
   return isMobile.value ? info.mobile : info.desktop;
 });
 const proxy = useGlobalProperties();
-const openState = ref(dictFilter("status"));
+// 固定字典选项统一在 @/config/dictOptions 管理（value 为数字，与本页 status === 数字比较匹配）
+const openState = ref(STATUS_OPTIONS);
 const form = ref({
     name: "",
     status: null

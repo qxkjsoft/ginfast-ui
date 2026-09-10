@@ -185,6 +185,7 @@
 </template>
 
 <script setup lang="ts">
+import { STATUS_OPTIONS, GENDER_OPTIONS } from "@/config/dictOptions";
 import { getDivisionAPI } from "@/api/department";   
 import { getRolesAPI } from "@/api/role";
 import { getAccountListAPI, addAccountAPI, editAccountAPI, deleteAccountAPI } from "@/api/user";
@@ -207,8 +208,9 @@ const layoutMode = computed(() => {
   return isMobile.value ? info.mobile : info.desktop;
 });
 
-const openState = ref(dictFilter("status"));
-const sexOption = ref(dictFilter("gender"));
+// 固定字典选项统一在 @/config/dictOptions 管理
+const openState = ref(STATUS_OPTIONS);
+const sexOption = ref(GENDER_OPTIONS);
 const form = ref({
     name: "",
     phone: "",
@@ -526,7 +528,7 @@ const getAllChildrenIds = (node: any): number[] => {
 
 // 获取部门列表
 const getDivision = async () => {
-    let { data } = await getDivisionAPI();
+    let { data } = await getDivisionAPI({ status: 1 });
     treeData.value = data.list;
     filteredTreeData.value = data.list; // 初始化过滤后的数据
     setTimeout(() => {

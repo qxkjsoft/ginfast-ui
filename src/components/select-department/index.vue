@@ -291,7 +291,7 @@ const openModal = async () => {
 const loadDepartmentTree = async () => {
   loading.value = true;
   try {
-    const { data } = await getDivisionAPI();
+    const { data } = await getDivisionAPI({ status: 1 });
     departmentTree.value = data.list;
   } catch (error) {
     console.error('加载部门树失败:', error);

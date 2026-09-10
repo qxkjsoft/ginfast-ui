@@ -123,7 +123,7 @@ const treeSwitch = ref({
 const getDivision = async () => {
     try {
         loading.value = true
-        const res = await getDivisionAPI()
+        const res = await getDivisionAPI({ status: 1 })
         treeData.value = res.data.list as DepartmentTreeNode[]
 
         // 如果需要展开全部，默认展开

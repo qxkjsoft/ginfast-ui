@@ -95,6 +95,7 @@
 </template>
 
 <script setup lang="ts">
+import { GENDER_OPTIONS } from "@/config/dictOptions";
 import { useRoute } from 'vue-router'
 import BasicInfo from "@/views/system/userinfo/components/basic-info.vue";
 import SecuritySettings from "@/views/system/userinfo/components/security-settings.vue";
@@ -338,7 +339,8 @@ const getUserInfo = async () => {
 };
 
 
-const sexOption = ref(dictFilter("gender"));
+// 固定字典选项统一在 @/config/dictOptions 管理（value 为字符串，与后端返回的 varchar sex 匹配）
+const sexOption = ref(GENDER_OPTIONS);
 const getSexName = (sex: number) => {
     const sexItem = sexOption.value.find((item: any) => item.value === sex);
     return sexItem ? sexItem.name : '-';

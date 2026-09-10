@@ -29,6 +29,7 @@
 </template>
 
 <script setup lang="ts">
+import { GENDER_OPTIONS } from "@/config/dictOptions";
 import { computed } from "vue";
 import useGlobalProperties from "@/hooks/useGlobalProperties";
 import { updateBasicInfoAPI } from "@/api/user";
@@ -37,7 +38,8 @@ import { useDevicesSize } from "@/hooks/useDevicesSize";
 const emit = defineEmits(["refresh"]);
 const proxy = useGlobalProperties();
 const data = defineModel() as any;
-const sexOption = ref(dictFilter("gender"));
+// 固定字典选项统一在 @/config/dictOptions 管理（value 为字符串，后端 Sex 为 string）
+const sexOption = ref(GENDER_OPTIONS);
 const { isMobile } = useDevicesSize();
 
 // 响应式布局配置

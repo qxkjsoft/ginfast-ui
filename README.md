@@ -191,6 +191,39 @@ server: {
 
 支持暗黑模式和自定义主题，配置位于 `src/store/modules/theme-config.ts`。
 
+### 字典系统
+
+页面下拉/单选等选项数据有两种来源：
+
+1. **数据库字典**：`sys_dict` / `sys_dict_item` 表，在"系统管理 → 字典管理"界面维护。登录时和路由守卫中由 `getAllDictsAPI` 拉取，存入 pinia（system store，持久化到 localStorage）
+2. **固定选项**：`src/config/dictOptions.ts` 统一管理。初始化部署时字典表是空的，核心系统页面（账号、角色、菜单、部门等）不依赖库里数据，直接使用固定选项
+
+选择原则：核心系统页面（初始化即可用）用 `dictOptions.ts`；业务字典（可后期在界面维护的）用字典管理 + `dictFilter`。
+
+**dictFilter 用法**（auto-import，无需 import）：
+
+```ts
+const options = ref(dictFilter("status"));
+// 字典有数据时返回: [{ value: "0", name: "禁用" }, ...]，无数据返回 []
+```
+
+**固定选项用法**：
+
+```ts
+import { STATUS_OPTIONS, GENDER_OPTIONS } from "@/config/dictOptions";
+
+const openState = ref(STATUS_OPTIONS);   // 状态：禁用(0)/启用(1)
+const sexOption = ref(GENDER_OPTIONS);   // 性别：男("1")/女("0")/保密("2")
+```
+
+新增固定选项：在 `dictOptions.ts` 中添加导出常量，页面 import 使用即可。
+
+**value 类型约定（重要，易踩坑）**：
+
+- value 类型必须与后端 Go 请求结构体的字段类型一致：后端为 string（如 Sex）→ 前端必须用字符串，传数字会报 `json: cannot unmarshal number into Go struct field ... of type string`
+- 后端为整型（如 Status）→ 用数字；本地筛选若用 `===` 严格比较，value 类型需与记录字段类型一致
+- 字典表 `sys_dict_item.value` 列是 varchar，`dictFilter` 返回的 value 均为字符串
+
 ## 构建优化
 
 项目采用多种构建优化策略：

@@ -9,11 +9,11 @@
                         <a-input v-model="form.path" placeholder="路由路径" allow-clear />
                         <a-input v-model="form.permission" placeholder="权限标识" allow-clear />
                         <a-select v-model="form.hide" placeholder="请选择显示状态" allow-clear style="width: 120px">
-                            <a-option v-for="item in openState" :key="item.value" :value="item.value">{{ item.name
+                            <a-option v-for="item in hideState" :key="item.value" :value="item.value">{{ item.name
                             }}</a-option>
                         </a-select>
                         <a-select v-model="form.disable" placeholder="请选择启用状态" allow-clear style="width: 120px">
-                            <a-option v-for="item in openState" :key="item.value" :value="item.value">{{ item.name
+                            <a-option v-for="item in disableState" :key="item.value" :value="item.value">{{ item.name
                             }}</a-option>
                         </a-select>
                         <a-button type="primary" @click="performSearch">
@@ -427,6 +427,7 @@
 </template>
 
 <script setup lang="ts">
+import { HIDE_OPTIONS, DISABLE_OPTIONS } from "@/config/dictOptions";
 import SApiPermission from "@/components/s-api-permission/index.vue";
 import SMenuRestoreModal from "@/components/s-menu-restore-modal/index.vue";
 import { type MenuItem, getMenuListAPI, addMenuAPI, updateMenuAPI, deleteMenuAPI, exportMenuAPI, importMenuAPI, deleteMenusAPI, backupMenuAPI, type ImportResult } from "@/api/menu";
@@ -454,7 +455,9 @@ const layoutMode = computed(() => {
 
 
 const proxy = useGlobalProperties();
-const openState = ref(dictFilter("status"));
+// 固定字典选项统一在 @/config/dictOptions 管理；值必须用 "false"/"true" 字符串（performSearch 按此匹配 hide/disable 的 0/1）
+const hideState = ref(HIDE_OPTIONS);
+const disableState = ref(DISABLE_OPTIONS);
 const form = ref({
     id: "",
     name: "",

@@ -45,9 +45,15 @@ export interface DivisionDeleteData {
   id: number;
 }
 
+// 部门列表查询参数接口
+export interface DivisionListParams {
+  // 状态过滤：0 禁用 1 启用，不传返回全部
+  status?: number;
+}
+
 // 获取部门数据
-export const getDivisionAPI = () => {
-  return http.request<DivisionsResult>("get", baseUrlApi("sysDepartment/getDivision"));
+export const getDivisionAPI = (params?: DivisionListParams) => {
+  return http.request<DivisionsResult>("get", baseUrlApi("sysDepartment/getDivision"), { params });
 };
 
 // 根据ID获取部门信息

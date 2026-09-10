@@ -140,6 +140,7 @@
 </template>
 
 <script setup lang="ts">
+import { STATUS_OPTIONS } from "@/config/dictOptions";
 import {
     getDivisionAPI,
     addDivisionAPI,
@@ -303,7 +304,8 @@ const deleteDivision = async (record: DivisionItem) => {
     }
 };
 
-const openState = ref(dictFilter("status"));
+// 固定字典选项统一在 @/config/dictOptions 管理（search 中有 Number() 转换，数字值兼容）
+const openState = ref(STATUS_OPTIONS);
 const form = ref({
     name: "",
     status: ""
