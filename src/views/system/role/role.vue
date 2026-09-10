@@ -200,7 +200,7 @@ const displayRoleList = ref<RoleItem[]>([]);
 // 查询功能 - 在前端完成筛选，递归查找
 const search = () => {
     const nameFilter = form.value.name?.trim();
-    const statusFilter = form.value.status ? Number(form.value.status) : null;
+    const statusFilter = form.value.status !== null && form.value.status !== undefined ? Number(form.value.status) : null;
     // 如果没有筛选条件，显示所有数据
     if (!nameFilter && statusFilter === null) {
         displayRoleList.value = [...allRoleList.value];
