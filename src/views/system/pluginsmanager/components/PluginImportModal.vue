@@ -92,7 +92,7 @@
 <script setup lang='ts'>
 import { ref, computed, h } from 'vue'
 import { Modal } from '@arco-design/web-vue'
-import { importPluginAPI, type PluginImportRequest } from '@/api/pluginsmanager'
+import { importPluginAPI, type PluginImportRequest, type SQLDangerInfo } from '@/api/pluginsmanager'
 import useGlobalProperties from '@/hooks/useGlobalProperties'
 import { useDevicesSize } from '@/hooks/useDevicesSize'
 
@@ -240,6 +240,77 @@ const showExistingItems = (data: any) => {
   })
 }
 
+// 显示危险SQL语句确认框，确认后携带确认参数重新导入
+const showDangerousSQLConfirm = (dangerousSQLs: SQLDangerInfo[]) => {
+  const contentVNode = h('div', { style: { textAlign: 'left' } }, [
+    h('p', { style: { color: '#e6192e', margin: '0 0 12px' } },
+      `检测到 ${dangerousSQLs.length} 条危险语句，继续导入将在数据库中执行它们，请确认压缩包来源可信：`),
+    h('div', { style: { maxHeight: '300px', overflowY: 'auto', paddingLeft: '8px' } },
+      dangerousSQLs.map((item) =>
+        h('div', { key: item.index, style: { marginBottom: '10px', fontSize: '13px' } }, [
+          h('div', [
+            h('span', { style: { color: '#e6192e', fontWeight: 600, marginRight: '8px' } }, `#${item.index} [${item.keyword}]`),
+            h('span', { style: { color: '#999' } }, item.reason)
+          ]),
+          h('div', {
+            style: {
+              marginTop: '4px',
+              padding: '6px 8px',
+              background: '#f7f8fa',
+              borderRadius: '4px',
+              fontFamily: 'monospace',
+              wordBreak: 'break-all',
+              color: '#4e5969'
+            }
+          }, item.statement)
+        ])
+      )
+    )
+  ])
+
+  Modal.warning({
+    title: '检测到危险SQL语句',
+    content: () => contentVNode,
+    okText: '仍要继续导入',
+    cancelText: '取消',
+    hideCancel: false,
+    onOk: () => {
+      reimportWithDangerConfirm()
+    }
+  })
+}
+
+// 携带危险语句确认标记重新导入
+const reimportWithDangerConfirm = async () => {
+  if (!selectedFile.value) {
+    proxy.$message.error('请选择文件')
+    return
+  }
+
+  try {
+    importLoading.value = true
+    const response = await importPluginAPI(selectedFile.value, {
+      ...importParams.value,
+      confirmDangerousSQL: true
+    })
+    if (response.code === 0) {
+      proxy.$message.success('插件导入成功')
+      emit('success')
+      handleClose()
+    } else {
+      // 确认后的重试仍可能返回"已存在项"等警告，按原逻辑提示
+      proxy.$message.warning(response.message)
+      if (response.data && response.data.isWarning) {
+        showExistingItems(response.data)
+      }
+    }
+  } catch (error: any) {
+    proxy.$message.error(error?.message || '插件导入失败')
+  } finally {
+    importLoading.value = false
+  }
+}
+
 // 确认导入
 const confirmImport = async () => {
   if (!selectedFile.value) {
@@ -254,6 +325,9 @@ const confirmImport = async () => {
         proxy.$message.success('插件导入成功')
         emit('success')
         handleClose()
+    } else if (response.data && response.data.dangerousSQLs && response.data.dangerousSQLs.length > 0) {
+        // database.sql包含危险语句：弹确认框，由用户决定是否继续（未确认前服务端不会执行任何导入）
+        showDangerousSQLConfirm(response.data.dangerousSQLs)
     } else {
         // 显示存在的项目列表
         proxy.$message.warning(response.message)

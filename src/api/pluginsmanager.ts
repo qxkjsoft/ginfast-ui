@@ -40,13 +40,33 @@ export const exportPluginAPI = (folderName: string, includeData: boolean = true)
   } as any);
 };
 
+// 危险SQL语句信息（导入检测）
+export interface SQLDangerInfo {
+  index: number;     // 语句序号（从1开始）
+  keyword: string;   // 命中的危险关键字
+  reason: string;    // 危险原因说明
+  statement: string; // 语句内容预览（超长截断）
+}
+
+// 插件导入响应 data 部分
+export interface PluginImportResult {
+  existingPaths?: string[];      // 已存在的路径列表
+  existingTables?: string[];     // 已存在的数据库表列表
+  dangerousSQLs?: SQLDangerInfo[]; // database.sql中检测到的危险语句列表
+  isWarning?: boolean;           // 是否存在警告
+}
+
 // 插件导入请求参数
 export interface PluginImportRequest {
   overwriteDB: boolean;    // 是否导入并覆盖数据库
   overwriteFiles: boolean; // 是否导入并覆盖文件
   importMenu: boolean;     // 是否导入菜单
   checkExist: boolean;     // 是否检查文件及数据库
+  confirmDangerousSQL?: boolean; // 已确认database.sql中的危险语句，允许继续执行
 }
+
+// 插件导入响应
+export type PluginImportResponseResult = BaseResult<PluginImportResult>;
 
 // 导入插件
 export const importPluginAPI = (file: File, params: PluginImportRequest) => {
@@ -56,8 +76,9 @@ export const importPluginAPI = (file: File, params: PluginImportRequest) => {
   formData.append('overwriteFiles', params.overwriteFiles ? '1' : '0');
   formData.append('importMenu', params.importMenu ? '1' : '0');
   formData.append('checkExist', params.checkExist ? '1' : '0');
-  
-  return http.request<any>("post", baseUrlApi("pluginsmanager/import"), { data: formData, headers: { 'Content-Type': 'multipart/form-data' } });
+  formData.append('confirmDangerousSQL', params.confirmDangerousSQL ? '1' : '0');
+
+  return http.request<PluginImportResponseResult>("post", baseUrlApi("pluginsmanager/import"), { data: formData, headers: { 'Content-Type': 'multipart/form-data' } });
 };
 
 
