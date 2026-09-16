@@ -8,8 +8,8 @@
                 </template>
             </a-button>
             <template #content>
-                <a-doption :disabled="language === 'zh-CN'">{{ $t(`system.zh-CN`) }}</a-doption>
-                <a-doption :disabled="language === 'en-US'">{{ $t(`system.en-US`) }}</a-doption>
+                <a-doption value="zh-CN" :disabled="language === 'zh-CN'">{{ $t(`system.zh-CN`) }}</a-doption>
+                <a-doption value="en-US" :disabled="language === 'en-US'">{{ $t(`system.en-US`) }}</a-doption>
             </template>
         </a-dropdown>
         <!-- 切换黑夜模式 -->
@@ -251,14 +251,12 @@ const onNightMode = () => {
     setDarkMode();
 };
 
-// 语言
-const onLange = (value: string) => {
-    if (value === "Chinese" || value === "中文") {
-        themeStore.setLanguage("zh-CN");
-    } else {
-        themeStore.setLanguage("en-US");
+// 语言（a-doption 的 value prop 即语言标识）
+const onLange = (value: string | number | undefined) => {
+    if (value === "zh-CN" || value === "en-US") {
+        themeStore.setLanguage(value);
+        i18n.locale.value = language.value;
     }
-    i18n.locale.value = language.value;
 };
 
 // 个人中心

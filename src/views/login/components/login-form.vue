@@ -23,7 +23,7 @@
                         </template>
                     </a-input-password>
                 </a-form-item>
-                <a-form-item field="verifyCode" :hide-asterisk="true">
+                <a-form-item v-if="captchaEnabled" field="captchaValue" :hide-asterisk="true">
                     <div class="verifyCode">
                         <a-input style="width: 160px" v-model="form.captchaValue" allow-clear placeholder="请输入验证码" />
                         <!-- <s-verify-code :content-height="30" :font-size-max="30" :content-width="110"
@@ -51,7 +51,7 @@
 import { useRouter } from "vue-router";
 import { useRouteConfigStore } from "@/store/modules/route-config";
 import { useUserStoreHook } from "@/store/modules/user";
-import { onMounted, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { getVerifyImgString } from "@/api/user";
 import { useSystemStore } from "@/store/modules/system";
 import { useSysConfigStore } from "@/store/modules/sys-config";
@@ -59,7 +59,9 @@ import { useSysConfigStore } from "@/store/modules/sys-config";
 import { storeToRefs } from "pinia";
 // 获取系统配置
 const sysConfigStore = useSysConfigStore();
-const { systemConfig, tenantEnabled } = storeToRefs(sysConfigStore);
+const { systemConfig, tenantEnabled, captchaConfig } = storeToRefs(sysConfigStore);
+// 验证码开关（配置由 App.vue 挂载时经公开接口异步拉取，需响应式消费）
+const captchaEnabled = computed(() => captchaConfig.value.open);
 // 定义表单数据类型
 interface LoginForm {
     tenantCode: string;
@@ -84,8 +86,8 @@ const form = ref<LoginForm>({
 });
 
 
-// 表单验证规则
-const rules = ref({
+// 表单验证规则（验证码规则仅在其开启时生效）
+const rules = computed(() => ({
     username: [
         {
             required: true,
@@ -98,13 +100,17 @@ const rules = ref({
             message: "请输入密码"
         }
     ],
-    captchaValue: [
-        {
-            required: true,
-            message: "请输入验证码"
+    ...(captchaEnabled.value
+        ? {
+            captchaValue: [
+                {
+                    required: true,
+                    message: "请输入验证码"
+                }
+            ]
         }
-    ]
-});
+        : {})
+}));
 
 // 提交表单
 const onSubmit = async ({ errors }: { errors: Record<string, any> | undefined }) => {
@@ -112,6 +118,11 @@ const onSubmit = async ({ errors }: { errors: Record<string, any> | undefined })
     // 多租户关闭时不提交租户编码
     if (!tenantEnabled.value) {
         form.value.tenantCode = "";
+    }
+    // 验证码关闭时不提交验证码字段
+    if (!captchaEnabled.value) {
+        form.value.captchaValue = null;
+        form.value.captchaId = "";
     }
     await onLogin();
 };
@@ -143,8 +154,10 @@ const onLogin = async () => {
     } catch (error) {
         console.error("登录失败:", error);
         //arcoMessage("error", typeof error === "string" ? error : "登录失败，请检查用户名和密码");
-        form.value.captchaId = "";
-        refreshCaptcha();
+        if (captchaEnabled.value) {
+            form.value.captchaId = "";
+            refreshCaptcha();
+        }
     } finally {
         loginLoading.value = false;
     }
@@ -178,10 +191,12 @@ watch(systemConfig, (newConfig) => {
     }
 }, { immediate: true });
 
-// 组件挂载时的初始化
-onMounted(async () => {
-    refreshCaptcha();
-});
+// 验证码开启时拉取验证码图片；配置异步到达或开关变化时响应（未拉取过才请求，避免重复）
+watch(captchaEnabled, (open) => {
+    if (open && !captchaImgUrl.value) {
+        refreshCaptcha();
+    }
+}, { immediate: true });
 </script>
 
 <style lang="scss" scoped>
