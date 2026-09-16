@@ -43,7 +43,20 @@ export const staticRoutes = [
     name: "layout",
     redirect: HOME_PATH,
     component: () => import(/* webpackChunkName: "layout" */ "@/layout/index.vue"),
-    children: []
+    children: [
+      {
+        // 个人中心：全员基础页面，静态注册不依赖后端菜单下发
+        // （右上角头像下拉为硬编码跳转，若仅靠角色菜单注册路由，角色漏配该隐藏菜单时会 404；
+        // 若角色菜单也下发了同名路由，addRoute 会按名称覆盖本条，行为一致）
+        path: "/system/userinfo",
+        name: "userinfo",
+        component: () => import(/* webpackChunkName: "userinfo" */ "@/views/system/userinfo/userinfo.vue"),
+        meta: {
+          title: "userinfo",
+          hide: true
+        }
+      }
+    ]
   }
   /**
    * 提示：写在这里的为全屏界面，不建议写在这里非全屏界面，请写在 layout.children 路由数组中

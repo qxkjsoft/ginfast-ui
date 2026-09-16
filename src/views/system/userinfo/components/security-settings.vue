@@ -25,8 +25,8 @@
                             <a-input v-model="form.email" placeholder="请输入邮箱" allow-clear />
                         </a-form-item>
                         <a-form-item :label-col-flex="isMobile ? '100px' : '80px'">
-                            <a-button type="primary" html-type="submit"
-                                v-hasPerm="['system:userinfo:updateAccount']">提交</a-button>
+                            <!-- 个人中心为全员自服务功能：接口强制只操作当前登录用户本人（后端已白名单免角色鉴权），提交按钮不做角色权限控制 -->
+                            <a-button type="primary" html-type="submit">提交</a-button>
                         </a-form-item>
                     </a-form>
                 </a-card>
