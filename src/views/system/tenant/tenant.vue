@@ -142,7 +142,16 @@
                         <a-radio :value="0">停用</a-radio>
                     </a-radio-group>
                 </a-form-item>
-                <a-form-item field="menuPermission" label="菜单权限">
+                <a-form-item field="menuFilterEnabled" label="菜单权限过滤">
+                    <a-switch v-model="modalFormModel.menuFilterEnabled">
+                        <template #checked>开启</template>
+                        <template #unchecked>关闭</template>
+                    </a-switch>
+                    <template #extra>
+                        <div>开启后该租户的左侧导航、菜单管理、角色授权均仅可见下方勾选的菜单；关闭则不受限制</div>
+                    </template>
+                </a-form-item>
+                <a-form-item v-if="modalFormModel.menuFilterEnabled" field="menuPermission" label="菜单权限">
                     <a-scrollbar style="height:400px;overflow: auto;">
                         <menu-permission-tree v-model="modalFormModel.menuPermission" />
                     </a-scrollbar>
@@ -206,6 +215,7 @@ const modalFormModel = reactive({
     status: 1,
     platformDomain:'',
     menuPermission: '', // 逗号分隔的菜单ID集合
+    menuFilterEnabled: true, // 菜单权限过滤开关；关闭时 menuPermission 保留原值，便于重新开启时恢复
 })
 
 const rules = {
@@ -279,6 +289,7 @@ const handleAdd = () => {
     modalFormModel.status = 1
     modalFormModel.platformDomain = ''
     modalFormModel.menuPermission = ''
+    modalFormModel.menuFilterEnabled = true
     currentRecord.value = null
 }
 
@@ -305,8 +316,9 @@ const handleEdit = async (record: Tenant) => {
         modalFormModel.description = data.description || ''
         modalFormModel.status = data.status
         modalFormModel.platformDomain = data.platformDomain || ''
-        // 假设后端返回 menuPermission 字段，如果没有则默认为空字符串
-        modalFormModel.menuPermission = (data as any).menuPermission || ''
+        modalFormModel.menuPermission = data.menuPermission || ''
+        // 老后端未返回该字段时默认视为开启（与旧行为一致：按菜单权限过滤）
+        modalFormModel.menuFilterEnabled = data.menuFilterEnabled ?? true
     } catch (error) {
         Message.error('获取租户信息失败')
     }

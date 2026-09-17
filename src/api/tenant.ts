@@ -15,6 +15,8 @@ export interface Tenant {
   createdAt: string
   updatedAt: string
   platformDomain: string
+  menuPermission?: string
+  menuFilterEnabled: boolean
 }
 
 /** 租户列表响应 */
