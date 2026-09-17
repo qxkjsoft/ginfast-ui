@@ -217,7 +217,7 @@ const showAvatarUpload = () => {
     // 通过JavaScript创建input元素
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
-    fileInput.accept = 'image/*';
+    fileInput.accept = 'image/jpeg,image/png,image/gif,image/bmp';
     fileInput.style.display = 'none';
 
     // 添加change事件监听器
@@ -262,8 +262,10 @@ const confirmUploadAvatar = () => {
     cropperRef.value.getCropBlob((data: Blob) => {
         // 上传头像
         const formData = new FormData();
-        // 添加文件名参数
-        formData.append('file', data, selectedFileName.value);
+        // 按裁剪导出的实际 MIME 命名扩展名（outputType=png 时 blob.type=image/png），避免内容与扩展名不符被后端拦截
+        const ext = (data.type.split('/')[1] || 'png').toLowerCase();
+        const baseName = selectedFileName.value.replace(/\.[^.]+$/, '') || 'avatar';
+        formData.append('file', data, `${baseName}.${ext}`);
         uploadAvatarAPI(formData).then(res => {
             const { data } = res
             const avatarUrl = handleUrl(data.url)

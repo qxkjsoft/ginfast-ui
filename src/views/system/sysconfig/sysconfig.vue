@@ -25,9 +25,9 @@
                                         <!-- 图片上传组件 -->
                                         <ImageUpload :width="50" :height="50"
                                             v-model="configData.system.systemLogo" :title="'系统Logo'"
-                                            :accept="'.svg'" />
+                                            :accept="'.png'" />
                                         <template #extra>
-                                            <div>显示在登录页面和系统导航栏的网站图标（建议 .svg 格式）</div>
+                                            <div>显示在登录页面和系统导航栏的网站图标（建议 .png 格式）</div>
                                         </template>
                                     </a-form-item>
                                 </a-col>
