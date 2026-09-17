@@ -982,14 +982,19 @@ const triggerImport = (overwrite: boolean) => {
 
 // ==================== 菜单备份 ====================
 const onBackup = () => {
+    // 勾选了菜单时仅备份勾选的菜单（后端自动补充其子级与父级链），未勾选时备份全部
+    const menuIds = selectedKeys.value;
+    const isPartial = menuIds.length > 0;
     Modal.confirm({
         title: "菜单备份",
-        content: "将当前全部菜单（含关联API）备份到服务器备份目录，文件名按时间生成。",
+        content: isPartial
+            ? `将勾选的 ${menuIds.length} 个菜单（含其子级及父级链）备份到服务器备份目录，文件名按时间生成。`
+            : "将当前全部菜单（含关联API）备份到服务器备份目录，文件名按时间生成。",
         okText: "开始备份",
         cancelText: "取消",
         onOk: async () => {
             try {
-                const response = await backupMenuAPI();
+                const response = await backupMenuAPI(isPartial ? { menuIds } : undefined);
                 if (response.code === 0 && response.data) {
                     arcoMessage("success", `备份成功：${response.data.filename}（共 ${response.data.menuCount} 个菜单）`);
                 }

@@ -205,9 +205,9 @@ export interface MenuRestoreResult extends ImportResult {
     restoredRoleMenus: number; // 重新挂载的角色菜单授权数
 }
 
-// 备份菜单到服务器
-export const backupMenuAPI = () => {
-    return http.request<BaseResult<MenuBackupResult>>("post", baseUrlApi("sysMenu/backup"));
+// 备份菜单到服务器（不传 menuIds 时备份全部菜单，传时仅备份勾选菜单及其子级与父级链）
+export const backupMenuAPI = (data?: { menuIds?: number[] }) => {
+    return http.request<BaseResult<MenuBackupResult>>("post", baseUrlApi("sysMenu/backup"), { data });
 };
 
 // 获取菜单备份文件列表
