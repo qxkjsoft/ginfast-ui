@@ -10,7 +10,7 @@
                 <p>租户域名: {{ tenantDomain }}</p>
             </template>
         </a-popover>
-        
+        <div v-if="username" class="footer_user">{{ `[当前用户:${username}]` }}</div>
     </a-layout-footer>
 </template>
 
@@ -59,6 +59,11 @@ const tenantDomain = computed(() => {
     return account.value.tenantDomain || "";
 });
 
+// 当前登录用户名
+const username = computed(() => {
+    return account.value.username || "";
+});
+
 
 
 const onFooter = () => {
@@ -83,6 +88,11 @@ const onFooter = () => {
 }
 
 .footer_tenant {
+    margin-right: 20px;
+    color: $color-text-4;
+}
+
+.footer_user {
     margin-right: 20px;
     color: $color-text-4;
 }

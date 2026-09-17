@@ -235,8 +235,12 @@
                     <a-form-item v-if="[1, 2].includes(addFrom.type)" field="path" label="路由路径" validate-trigger="blur">
                         <a-input v-model="addFrom.path" placeholder="请输入路由路径，如：/home" allow-clear @input="pathChange" />
                         <template #extra>
-                            <div>
-                                菜单名称由路径自动生成
+                            <div v-if="addFrom.type == 1">
+                                目录路径不参与子页面地址拼接，仅作为全局唯一标识（查重、导入、备份恢复均按此匹配），并用于生成路由名称
+                                <a-typography-text code v-if="addFrom.name"> {{ addFrom.name }} </a-typography-text>
+                            </div>
+                            <div v-else>
+                                页面的完整访问地址（需含父级前缀，如 /system/user），菜单名称由路径自动生成
                                 <a-typography-text code v-if="addFrom.name"> {{ addFrom.name }} </a-typography-text>
                             </div>
                         </template>

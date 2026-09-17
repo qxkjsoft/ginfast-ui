@@ -10,7 +10,10 @@
                             <a-option v-for="item in methodOptions" :key="item.value" :value="item.value">{{ item.name
                                 }}</a-option>
                         </a-select>
-                        <a-input v-model="form.apiGroup" placeholder="请输入API分组" allow-clear />
+                        <a-select v-model="form.apiGroup" placeholder="请选择或输入API分组" allow-create filterable
+                            allow-clear style="width: 160px">
+                            <a-option v-for="item in apiGroupOptions" :key="item" :value="item">{{ item }}</a-option>
+                        </a-select>
                         <a-button type="primary" @click="onSearch">
                             <template #icon><icon-search /></template>
                             <span>查询</span>
@@ -99,15 +102,19 @@
                                 }}</a-option>
                         </a-select>
                     </a-form-item>
-                    <a-form-item field="apiGroup" label="API分组" validate-trigger="blur">
-                        <a-input v-model="addFrom.apiGroup" placeholder="请输入API分组" allow-clear />
+                    <a-form-item field="apiGroup" label="API分组" validate-trigger="blur"
+                        extra="可选择已有分组，也可直接输入新分组">
+                        <a-select v-model="addFrom.apiGroup" placeholder="请选择或输入API分组" allow-create filterable
+                            allow-clear>
+                            <a-option v-for="item in apiGroupOptions" :key="item" :value="item">{{ item }}</a-option>
+                        </a-select>
                     </a-form-item>
                 </a-form>
             </div>
         </a-modal>
 
         <!-- 路由同步预览弹窗 -->
-        <SysApiSyncModal v-model:visible="syncVisible" @success="getSysApiList" />
+        <SysApiSyncModal v-model:visible="syncVisible" @success="onSyncSuccess" />
     </div>
 </template>
 
@@ -118,6 +125,7 @@ import {
     addSysApiAPI,
     updateSysApiAPI,
     deleteSysApiAPI,
+    getSysApiGroupListAPI,
     type SysApiItem,
     type SysApiListParams,
     type SysApiAddParams,
@@ -166,6 +174,19 @@ const methodOptions = ref([
     { name: "DELETE", value: "DELETE" },
     { name: "PATCH", value: "PATCH" }
 ]);
+
+// API分组选项
+const apiGroupOptions = ref<string[]>([]);
+
+// 获取API分组列表（按组内最新创建时间降序）
+const getApiGroupOptions = async () => {
+    try {
+        const { data } = await getSysApiGroupListAPI();
+        apiGroupOptions.value = data.list;
+    } catch (error) {
+        console.error("获取API分组列表失败", error);
+    }
+};
 
 // 获取请求方法对应的颜色
 const getMethodColor = (method: string) => {
@@ -251,7 +272,7 @@ const rules = {
     title: [{ required: true, message: "请输入API标题" }],
     path: [{ required: true, message: "请输入API路径" }],
     method: [{ required: true, message: "请选择请求方法" }],
-    apiGroup: [{ required: true, message: "请输入API分组" }]
+    apiGroup: [{ required: true, message: "请输入或选择API分组" }]
 };
 
 // 表单数据
@@ -319,6 +340,7 @@ const handleOk = async () => {
             Message.success("编辑成功");
         }
         getSysApiList();
+        getApiGroupOptions();
         return true;
     } catch (error) {
         console.error("操作失败", error);
@@ -344,6 +366,7 @@ const onDelete = async (row: SysApiItem) => {
         await deleteSysApiAPI({ id: row.id } as SysApiDeleteParams);
         Message.success("删除成功");
         getSysApiList();
+        getApiGroupOptions();
     } catch (error) {
         console.error("删除失败", error);
         Message.error("删除失败");
@@ -353,9 +376,16 @@ const onDelete = async (row: SysApiItem) => {
 // ===== 路由同步 =====
 const syncVisible = ref(false);
 
+// 同步路由成功后刷新列表与分组选项
+const onSyncSuccess = () => {
+    getSysApiList();
+    getApiGroupOptions();
+};
+
 // 初始化
 onMounted(() => {
     getSysApiList();
+    getApiGroupOptions();
 });
 </script>
 

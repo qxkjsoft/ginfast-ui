@@ -92,6 +92,11 @@ export const deleteSysApiAPI = (data: SysApiDeleteParams) => {
     return http.request<BaseResult>("delete", baseUrlApi("sysApi/delete"), { data });
 };
 
+/** 获取API分组列表（去重，按组内最新创建时间降序） */
+export const getSysApiGroupListAPI = () => {
+    return http.request<BaseResult<{ list: string[] }>>("get", baseUrlApi("sysApi/groupList"));
+};
+
 /** 获取菜单关联的API接口 */
 export const getMenuApisAPI = (menuId: number) => {
     return http.request<BaseResult<number[]>>("get", baseUrlApi(`sysMenu/apis/${menuId}`));
