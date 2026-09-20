@@ -528,12 +528,16 @@ const getAllChildrenIds = (node: any): number[] => {
 
 // 获取部门列表
 const getDivision = async () => {
-    let { data } = await getDivisionAPI({ status: 1 });
-    treeData.value = data.list;
-    filteredTreeData.value = data.list; // 初始化过滤后的数据
-    setTimeout(() => {
-        treeRef.value.expandAll();
-    }, 0);
+    try {
+        let { data } = await getDivisionAPI({ status: 1 });
+        treeData.value = data.list;
+        filteredTreeData.value = data.list; // 初始化过滤后的数据
+        setTimeout(() => {
+            treeRef.value?.expandAll();
+        }, 0);
+    } catch {
+        // 错误已在http拦截器中统一提示，失败时保持空部门树
+    }
 };
 
 // 部门树选择事件处理
@@ -566,8 +570,12 @@ const onSelectTree = (selectedKeys: any[]) => {
 // 角色列表
 const roleList = ref<any>([]);
 const getRole = async () => {
-    let { data } = await getRolesAPI();
-    roleList.value = data.list;
+    try {
+        let { data } = await getRolesAPI();
+        roleList.value = data.list;
+    } catch {
+        // 错误已在http拦截器中统一提示，失败时角色列表保持为空
+    }
 };
 
 onMounted(() => {
