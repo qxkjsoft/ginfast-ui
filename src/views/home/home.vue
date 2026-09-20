@@ -1,6 +1,7 @@
 <template>
   <div class="snow-page">
     <div class="home-page">
+      <a-alert class="demo-data-alert" type="info">当前首页各指标与图表均为演示数据，仅用于展示界面效果，不代表真实经营数据</a-alert>
       <!-- 常用功能 -->
       <Shortcut />
       <!-- 第三板指标 -->
@@ -24,5 +25,9 @@ import DataBox from "@/views/home/components/data-box.vue";
 .home-page {
   padding: $padding;
   background: $color-bg-1;
+}
+
+.demo-data-alert {
+  margin-bottom: $padding;
 }
 </style>

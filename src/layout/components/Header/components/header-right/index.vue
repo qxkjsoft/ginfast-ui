@@ -21,9 +21,9 @@
                 </template>
             </a-button>
         </a-tooltip>
-        <!-- 通知 -->
-        <a-popover position="bottom" trigger="click">
-            <a-button size="mini" type="text" class="icon_btn notice" id="system-notice">
+        <!-- 通知中心：后端暂无消息接口，入口暂时注释（F-07），需要时取消本段注释恢复 -->
+        <!-- <a-popover position="bottom" trigger="click">
+            <a-button size="mini" type="text" class="icon_btn" id="system-notice">
                 <template #icon>
                     <icon-notification :size="18" />
                 </template>
@@ -31,7 +31,7 @@
             <template #content>
                 <Notice />
             </template>
-        </a-popover>
+        </a-popover> -->
         <!-- 全屏 -->
         <a-tooltip :content="$t(`system.${fullScreen ? 'full-screen' : 'exit-full-screen'}`)">
             <a-button size="mini" type="text" class="icon_btn" id="system-fullscreen" @click="onFullScreen">
@@ -128,7 +128,8 @@
 </template>
 
 <script setup lang="ts">
-import Notice from "@/layout/components/Header/components/Notice/index.vue";
+// 通知中心入口暂时注释（后端暂无消息接口），恢复时取消本行与模板中 a-popover 的注释
+// import Notice from "@/layout/components/Header/components/Notice/index.vue";
 import SystemSettings from "@/layout/components/Header/components/system-settings/index.vue";
 import ThemeSettings from "@/layout/components/Header/components/theme-settings/index.vue";
 //import myImage from "@/assets/img/my-image.jpg";
@@ -355,22 +356,6 @@ const logOut = () => {
             transform: rotate(0deg);
             transition: transform 0.2s;
         }
-    }
-}
-
-.notice {
-    position: relative;
-
-    &::before {
-        position: absolute;
-        top: -4px;
-        right: -2px;
-        width: 6px;
-        height: 6px;
-        content: "";
-        background: $color-danger;
-        border: 2px solid #ffffff;
-        border-radius: 50%;
     }
 }
 

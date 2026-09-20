@@ -1,7 +1,10 @@
 <template>
   <div class="target-box">
     <div class="box-title">
-      <div>第三板指标</div>
+      <div>
+        第三板指标
+        <a-tag class="demo-data-tag" color="gray">演示数据</a-tag>
+      </div>
     </div>
     <a-divider :margin="16" />
     <a-row>
@@ -136,5 +139,8 @@ const targetData = reactive({
   justify-content: space-between;
   font-size: $font-size-body-3;
   color: $color-text-1;
+}
+.demo-data-tag {
+  margin-left: $margin-text;
 }
 </style>

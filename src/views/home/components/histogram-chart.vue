@@ -7,8 +7,13 @@ import { default as VChart } from "@visactor/vchart";
 onMounted(() => {
   init();
 });
+onUnmounted(() => {
+  vchart?.release();
+  vchart = null;
+});
 
 const sellHistogram = ref();
+let vchart: InstanceType<typeof VChart> | null = null;
 const init = () => {
   const spec = {
     type: "bar",
@@ -36,7 +41,7 @@ const init = () => {
     barWidth: 10,
     barGapInGroup: 0
   };
-  const vchart = new VChart(spec as any, { dom: sellHistogram.value });
+  vchart = new VChart(spec as any, { dom: sellHistogram.value });
   vchart.renderSync();
 };
 </script>

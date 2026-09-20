@@ -1,7 +1,10 @@
 <template>
   <div class="finance-box">
     <div class="box-title">
-      <div>财务指标</div>
+      <div>
+        财务指标
+        <a-tag class="demo-data-tag" color="gray">演示数据</a-tag>
+      </div>
       <div>
         <span><icon-edit /></span>
         <span class="margin-left-text">自定义</span>
@@ -100,6 +103,9 @@ const financeData = ref([
   color: $color-text-1;
 }
 .margin-left-text {
+  margin-left: $margin-text;
+}
+.demo-data-tag {
   margin-left: $margin-text;
 }
 </style>

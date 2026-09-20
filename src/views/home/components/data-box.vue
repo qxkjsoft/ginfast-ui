@@ -3,6 +3,7 @@
     <div class="sell-histogram">
       <div>
         <span class="data-title">销售额趋势</span>
+        <a-tag class="demo-data-tag" color="gray">演示数据</a-tag>
         <span class="data-subtext">单位：元</span>
       </div>
       <HistogramChart />
@@ -10,6 +11,7 @@
     <div class="monthly-analysis">
       <div>
         <span class="data-title">现金分析</span>
+        <a-tag class="demo-data-tag" color="gray">演示数据</a-tag>
         <span class="data-subtext">单位：元</span>
       </div>
       <AnalysisChart />
@@ -36,6 +38,9 @@ import AnalysisChart from "@/views/home/components/analysis-chart.vue";
     margin-left: $margin-text;
     font-size: $font-size-body-2;
     color: $color-text-2;
+  }
+  .demo-data-tag {
+    margin-left: $margin-text;
   }
 }
 </style>

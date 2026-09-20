@@ -7,8 +7,13 @@ import { default as VChart } from "@visactor/vchart";
 onMounted(() => {
   init();
 });
+onUnmounted(() => {
+  vchart?.release();
+  vchart = null;
+});
 
 const monthlyAnalysis = ref();
+let vchart: InstanceType<typeof VChart> | null = null;
 const init = () => {
   const spec = {
     type: "pie",
@@ -65,7 +70,7 @@ const init = () => {
       }
     }
   };
-  const vchart = new VChart(spec as any, { dom: monthlyAnalysis.value });
+  vchart = new VChart(spec as any, { dom: monthlyAnalysis.value });
   vchart.renderSync();
 };
 </script>

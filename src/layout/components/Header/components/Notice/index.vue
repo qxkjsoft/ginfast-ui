@@ -19,17 +19,20 @@
 
 <script setup lang="ts">
 import myImage from "@/assets/img/my-image.jpg";
-const data = ref([
-  { id: 100, img: "", time: "1分钟前", nickname: "兔子先森", content: "一键三连" },
-  { id: 120, img: "", time: "1小时前", nickname: "捷克大力士", content: "与你握手问好" },
-  { id: 130, img: "", time: "2小时前", nickname: "forever", content: "you forever" }
-]);
-const noticeData = ref([
-  {
-    id: 1,
-    title: "notice",
-    data: data.value
-  },
+interface NoticeContent {
+  id: number;
+  time: string;
+  nickname: string;
+  content: string;
+}
+interface NoticeTab {
+  id: number;
+  title: string;
+  data: NoticeContent[];
+}
+// 后端暂无消息接口，各页签为空态展示；接入后填充数据源即可
+const noticeData = ref<NoticeTab[]>([
+  { id: 1, title: "notice", data: [] },
   { id: 2, title: "message", data: [] },
   { id: 3, title: "backlog", data: [] }
 ]);
