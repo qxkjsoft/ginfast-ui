@@ -310,85 +310,8 @@ export const getValue = (num: number, extent: { type: number; percent: number })
   return Math.round(result * 100) / 100;
 };
 
-/**
- * 判断是否为空对象
- * @param {any} obj 对象
- * @returns {boolean} 是否为空对象
- */
-export const isEmptyObject = (obj: any) => {
-  // 校验是否为对象且不为 null
-  if (typeof obj !== "object" || obj === null) {
-    return false;
-  }
-  return Object.keys(obj).length === 0 && obj.constructor === Object;
-};
-
-/**
- * 判断是否为安全环境https或localhost
- * @returns {boolean} 是否为安全环境https或localhost
- */
-export const isSecureEnvironment = () => {
-  const { protocol, hostname } = window.location;
-
-  // 检查协议是否为HTTPS
-  const isHttps = protocol === "https:";
-
-  // 检查主机名是否为localhost或本地IP（支持IPv4和IPv6）
-  const isLocalhost =
-    hostname === "localhost" || hostname === "127.0.0.1" || hostname === "0.0.0.0" || hostname === "[::1]" || hostname === "::1";
-
-  return isHttps || isLocalhost;
-};
-
-/**
- * 获取浏览器默认语言
- * @returns {string} 语言类型
- */
-export const webDefaultLanguage = () => navigator.language;
-
-/**
- * 深拷贝
- * @param { any } data 需要深拷贝的数据
- * @returns 深拷贝的数据
- */
-export const deepClone = (data: any) => {
-  let stack = [];
-  let cloned;
-  if (Array.isArray(data)) {
-    cloned = [];
-  } else if (typeof data === "object" && data !== null) {
-    cloned = {};
-  } else {
-    return data;
-  }
-  stack.push({
-    original: data,
-    copy: cloned
-  });
-  while (stack.length > 0) {
-    let current: any = stack.pop();
-    let original = current.original;
-    let copy = current.copy;
-
-    for (let key in original) {
-      if (original.hasOwnProperty(key)) {
-        let value = original[key];
-
-        if (typeof value === "object" && value !== null) {
-          copy[key] = Array.isArray(value) ? [] : {};
-
-          stack.push({
-            original: value,
-            copy: copy[key]
-          });
-        } else {
-          copy[key] = value;
-        }
-      }
-    }
-  }
-  return cloned;
-};
+// 以下四个工具曾在本文件重复实现（deepClone 副本且缺循环引用防护），改为转发导出消除双份维护（F-18）
+export { deepClone, isEmptyObject, isSecureEnvironment, webDefaultLanguage } from "@/utils";
 
 /**
  * 获取URL附带的参数

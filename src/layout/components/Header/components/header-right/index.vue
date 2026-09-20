@@ -231,17 +231,22 @@ const themeOpen = ref(false);
 const onThemeSetting = () => {
     themeOpen.value = true;
 };
-// 全屏
+// 全屏状态（true=当前非全屏；由 fullscreenchange 事件同步，ESC 退出后回显正确）
 const fullScreen = ref(true);
+const onFullscreenChange = () => {
+    fullScreen.value = !document.fullscreenElement;
+};
+onMounted(() => {
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+});
+onUnmounted(() => {
+    document.removeEventListener("fullscreenchange", onFullscreenChange);
+});
 const onFullScreen = () => {
     if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen();
-        fullScreen.value = false;
-    } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-            fullScreen.value = true;
-        }
+    } else if (document.exitFullscreen) {
+        document.exitFullscreen();
     }
 };
 
