@@ -26,14 +26,10 @@ const checkRole = (el: HTMLElement, bindingValue: unknown) => {
     // 检测自定义指令值并转化为数组格式
     const requiredRole = bindingValueEmpty(bindingValue);
 
-    // 超级管理员标识
-    //const super_admin = 1;
-
-    // 获取用户权限标识-Array[string]
-    //let { roles } = useUserInfoStore().account;
-    let { roles } = useUserStoreHook().account;
-    // 如果是超级管理员则放行
-    //if (roles.includes(super_admin)) return;
+    // 获取用户角色与权限标识
+    let { roles, permissions } = useUserStoreHook().account;
+    // 超级管理员放行（与 v-hasPerm 的 *:*:* 通配判定同源）
+    if (permissions.includes("*:*:*")) return;
 
     // 是否有权限
     const hasRole = requiredRole.some((perm: number) => roles.includes(perm));
@@ -47,9 +43,9 @@ const checkRole = (el: HTMLElement, bindingValue: unknown) => {
   }
 };
 
-const hasPerm: Directive = {
+const hasRole: Directive = {
   mounted: (el, binding) => checkRole(el, binding.value),
   updated: (el, binding) => checkRole(el, binding.value)
 };
 
-export default hasPerm;
+export default hasRole;

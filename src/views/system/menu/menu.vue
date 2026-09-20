@@ -1034,6 +1034,12 @@ onActivated(() => {
     }
 });
 
+// 卸载时清理动态追加到 body 的隐藏文件输入框，防止 DOM 与事件监听残留
+onUnmounted(() => {
+    fileInputRef.value?.remove();
+    fileInputRef.value = null;
+});
+
 
 </script>
 

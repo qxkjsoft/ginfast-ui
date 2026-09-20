@@ -54,9 +54,19 @@ const watermarkConfig = computed(() => {
   };
 });
 
-watch(watermarkConfig, newv => {
-  console.log(newv);
-});
+// 页签关闭（cacheRoutes 移除）时同步清理包装器定义，防止 wrapperMap 随 fullPath 变体无界增长
+// deep: true 是必须的：store 中 setRoutePaths(push)/removeRouteName(splice) 均为原地修改，
+// 不替换数组引用，非 deep 的 watch 无法感知变化（如关闭单个页签时）
+watch(
+  cacheRoutes,
+  routes => {
+    const alive = new Set(routes);
+    for (const key of wrapperMap.keys()) {
+      if (!alive.has(key)) wrapperMap.delete(key);
+    }
+  },
+  { deep: true }
+);
 </script>
 
 <style lang="scss" scoped>
