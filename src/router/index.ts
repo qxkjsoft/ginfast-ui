@@ -92,7 +92,7 @@ router.beforeEach(async (to: any, _: any, next: any) => {
             // 判断是否是动态路由
             const { isDynamicRoute } = useRoutingMethod();
             if (isDynamicRoute(to.path)) {
-                return next({ name: to.name, params: to.params });
+                return next({ name: to.name, params: to.params, query: to.query });
             } else {
                 return next({ path: to.path, query: to.query });
             }

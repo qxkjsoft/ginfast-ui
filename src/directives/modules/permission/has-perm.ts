@@ -1,6 +1,7 @@
 import { Directive } from "vue";
 // import { useUserInfoStore } from "@/store/modules/user-info";
 import { useUserStoreHook } from "@/store/modules/user";
+import { setElementHidden } from "./permission-display";
 /**
  * 检测指令绑定值是否为空
  * @param value 指令绑定值
@@ -32,18 +33,21 @@ const checkPermissions = (el: HTMLElement, bindingValue: unknown) => {
     // 获取用户权限标识-Array[string]
     //let { permissions } = useUserInfoStore().account;
     let { permissions } = useUserStoreHook().account;
-    // 如果是超级管理员则放行
-    if (permissions.includes(all_permission)) return;
+    // 如果是超级管理员则放行（并恢复可能被隐藏的节点）
+    if (permissions.includes(all_permission)) {
+      setElementHidden(el, false);
+      return;
+    }
 
     // 是否有权限
     const hasPermissions = requiredPermissions.some((perm: string) => permissions.includes(perm));
 
-    // 无权限、父节点存在时，删除当前节点
-    if (!hasPermissions && el.parentNode) el.parentNode.removeChild(el);
+    // 无权限时隐藏而非移除节点：updated 钩子重判（权限异步到位）后可恢复（F-20）
+    setElementHidden(el, !hasPermissions);
   } catch (error) {
     console.error(`权限指令错误: ${error}`);
-    // 删除当前节点
-    if (el.parentNode) el.parentNode.removeChild(el);
+    // 异常时保持 fail-closed：隐藏而非删除
+    setElementHidden(el, true);
   }
 };
 
