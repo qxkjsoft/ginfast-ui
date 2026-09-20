@@ -153,7 +153,7 @@ export const getAccountDetailAPI = (id: number) => {
 
 // 切换租户
 export const switchTenantAPI = (tenantId: number) => {
-    return http.request<UserResult>("get", baseUrlApi(`users/switchTenant/${tenantId}`));
+    return http.request<UserResult>("post", baseUrlApi(`users/switchTenant/${tenantId}`));
 };
 
 // 修改单前登录用户的密码、手机、邮箱

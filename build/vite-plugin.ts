@@ -69,14 +69,8 @@ export const createVitePlugins = (viteEnv: ViteEnv): (PluginOption | PluginOptio
     viteMockServe({
       mockPath: "./src/mock/", // 目录位置
       logger: true, //  是否在控制台显示请求日志
-      supportTs: true, // 是否读取ts文件模块
-      localEnabled: env.VITE_APP_OPEN_MOCK === "true", // 设置是否启用本地mock文件
-      prodEnabled: env.VITE_APP_OPEN_MOCK === "true", // 设置打包是否启用mock功能
-      // 这样可以控制关闭mock的时候不让mock打包到最终代码内
-      injectCode: `
-          import { setupProdMockServer } from '../src/mock/index';
-          setupProdMockServer();
-        `
+      // 开发期 mock 开关；3.x 已移除生产期 mock（prodEnabled/injectCode/supportTs 均废弃，TS 由 esbuild 原生支持）
+      enable: env.VITE_APP_OPEN_MOCK === "true"
     })
   ];
 };

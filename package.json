@@ -24,7 +24,7 @@
     "build:prod": "vue-tsc && vite build --mode production",
     "build:test": "vue-tsc && vite build --mode test",
     "preview": "vite preview",
-    "lint:eslint": "eslint --fix --ext .js,.ts,.vue ./src",
+    "lint:eslint": "eslint src --fix",
     "lint:prettier": "prettier --write \"src/**/*.{js,ts,json,tsx,css,less,scss,vue,html,md}\"",
     "lint:lint-staged": "lint-staged",
     "fix": "eslint src --fix",
@@ -110,7 +110,7 @@
     "unplugin-vue-components": "^0.26.0",
     "vite": "^6.3.5",
     "vite-plugin-eslint": "^1.8.1",
-    "vite-plugin-mock": "^2.9.6",
+    "vite-plugin-mock": "^3.0.2",
     "vite-plugin-svg-icons": "^2.0.1",
     "vitest": "^4.1.11",
     "vue-tsc": "^2.2.4"
