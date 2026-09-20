@@ -109,5 +109,26 @@ const themeConfig = () => {
 };
 
 export const useThemeConfig = defineStore("theme-config", themeConfig, {
-  persist: persistedstateConfig("theme-config")
+  // 防调试开关不持久化（F-13）：仅当前会话有效，刷新即恢复关闭，避免开过一次后每次启动自动启用
+  persist: persistedstateConfig("theme-config", [
+    "collapsed",
+    "refreshPage",
+    "language",
+    "darkMode",
+    "isAccordion",
+    "isBreadcrumb",
+    "isTabs",
+    "isFooter",
+    "watermark",
+    "watermarkStyle",
+    "watermarkRotate",
+    "watermarkGap",
+    "layoutType",
+    "colorWeakMode",
+    "grayMode",
+    "asideDark",
+    "transitionPage",
+    "themeColor",
+    "presetColors"
+  ])
 });

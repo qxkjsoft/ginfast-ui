@@ -81,6 +81,8 @@ const loadBackupList = async () => {
         backupLoading.value = true;
         const { data } = await getMenuBackupListAPI();
         backupList.value = data || [];
+    } catch {
+        // 错误已在http拦截器中统一提示，保留现有列表
     } finally {
         backupLoading.value = false;
     }

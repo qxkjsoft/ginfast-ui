@@ -273,6 +273,8 @@ const confirmUploadAvatar = () => {
             useUserStoreHook().account.avatar = avatarUrl;
             resetAvatarUpload();
             proxy.$message.success('头像上传成功');
+        }).catch(() => {
+            // 错误已在http拦截器中统一提示，弹窗保持打开供重试
         })
     });
 };
