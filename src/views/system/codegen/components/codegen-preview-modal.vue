@@ -293,10 +293,11 @@ watch(modalVisible, (newVal) => {
     }
 });
 
-// 只保留字符串中的英文字母，并且全部转换为小写
-const keepLettersOnlyLower = (s: string): string => {
+// 只保留字符串中的英文字母和下划线，并且全部转换为小写
+// 与后端 common.KeepLettersOnly 对齐（保留下划线）：
+const keepLettersOnly = (s: string): string => {
     if (!s) return '';
-    return s.replace(/[^a-zA-Z]/g, '').toLowerCase();
+    return s.replace(/[^a-zA-Z_]/g, '').toLowerCase();
 };
 
 // 处理文件选择
@@ -319,7 +320,7 @@ const handleFileSelect = (selectedKeys: string[], node: any) => {
 const getCodeTypeByPath = (path: string): string | null => {
     if (!previewRecord.value) return null;
     
-    const fileName = keepLettersOnlyLower(previewRecord.value.fileName || '');
+    const fileName = keepLettersOnly(previewRecord.value.fileName || '');
     
     // 根据路径匹配代码类型
     if (path.includes('controller.go')) return 'controller';
@@ -395,7 +396,7 @@ const loadPreviewData = async (record: SysGenItem) => {
             
             // 查找并选中 controller 节点
             if (tree && tree.length > 0) {
-                const fileName = keepLettersOnlyLower(previewRecord.value.fileName || '');
+                const fileName = keepLettersOnly(previewRecord.value.fileName || '');
                 const controllerNode = findNodeByPath(tree, `${fileName}controller.go`);
                 if (controllerNode) {
                     selectedFileKey.value = controllerNode.path;
