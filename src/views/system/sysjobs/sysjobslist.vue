@@ -6,7 +6,10 @@
                 <!-- 查询表单-->
                 <!-- 任务ID精确查询 -->
                 <a-input v-model="searchForm.id" placeholder="请输入任务ID" style="width: 240px;" />
-        
+
+                <!-- 任务分组名称模糊查询 -->
+                <a-input-search v-model="searchForm.group" placeholder="请输入任务分组名称搜索" style="width: 240px;" @search="handleSearch" allow-clear />
+
                 <!-- 任务名称模糊查询（仅非数值类型支持） -->
                 <a-input-search v-model="searchForm.name" placeholder="请输入任务名称搜索" style="width: 240px;" @search="handleSearch" allow-clear />
                 <!-- 执行器名称选择框查询（radio/select/checkbox统一使用select） -->
@@ -100,9 +103,7 @@
             @cancel="handleCancel" :width="layoutMode.width">
             <a-form :model="editingData" :rules="rules" ref="formRef" :layout="layoutMode.layout" auto-label-width>
                 <a-form-item field="group" label="任务分组名称">
-                    <a-select v-model="editingData.group" placeholder="请选择任务分组名称">
-                        <a-option v-for="item in groupList" :key="item.key" :value="item.key">{{ item.name }}</a-option>
-                    </a-select>
+                    <a-input v-model="editingData.group" placeholder="请输入任务分组名称" allow-clear />
                 </a-form-item>
                 <a-form-item field="name" label="任务名称">
                     <a-input v-model="editingData.name" placeholder="请输入任务名称" />
@@ -257,9 +258,10 @@ const {
 
 const modalVisible = ref(false);
 const formRef = ref();
-const groupList = ref<{ key: string; name: string; }[]>([
-    { key: 'default', name: '默认' },
-]);
+// 分组改为手动输入后暂不使用硬编码分组列表，保留备用
+// const groupList = ref<{ key: string; name: string; }[]>([
+//     { key: 'default', name: '默认' },
+// ]);
 const executorList = ref<string[]>([]);
 // 搜索表单
 const searchForm = reactive({
@@ -295,6 +297,20 @@ const rules = {
     executorName: [{ required: true, message: '执行器名称不能为空' }],
     executionPolicy: [{ required: true, message: '执行策略不能为空' }],
     cronExpression: [{ required: true, message: 'Cron表达式不能为空' }],
+    // 任务参数可留空；非空时必须是JSON对象（调度器参数为map类型）
+    parameters: [{
+        validator: (value: string, cb: (error?: string) => void) => {
+            const str = typeof value === 'string' ? value.trim() : '';
+            if (str === '') return cb();
+            try {
+                const parsed = JSON.parse(str);
+                if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) return cb();
+            } catch {
+                // 非法JSON，统一走下方提示
+            }
+            cb('任务参数必须是JSON对象格式，例如 {"param1": "value1"}');
+        }
+    }],
 };
 
 // 分页配置
@@ -326,10 +342,10 @@ const loadData = async (pageNum: number = currentPage.value, pageSizeVal: number
     if (searchForm.executorName) {
         params.executorName = searchForm.executorName;
     }
-    if (searchForm.executionPolicy) {
+    if (searchForm.executionPolicy !== undefined && searchForm.executionPolicy !== null) {
         params.executionPolicy = searchForm.executionPolicy;
     }
-    if (searchForm.status) {
+    if (searchForm.status !== undefined && searchForm.status !== null) {
         params.status = searchForm.status;
     }
     await fetchDataList(params);
