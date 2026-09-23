@@ -55,6 +55,7 @@ const systemRecordNo = computed(() => {
     position: relative;
     height: 100vh;
     overflow: hidden;
+    background-color: $color-bg-1;
     background-image: url('@/assets/img/login-bg.jpg');
     /* 设置背景图 */
     background-size: cover;
@@ -64,6 +65,12 @@ const systemRecordNo = computed(() => {
     background-repeat: no-repeat;
 
     /* 不重复 */
+
+    /* 暗黑模式下给背景图叠一层深色遮罩，使整页融入暗色风格 */
+    body[arco-theme="dark"] & {
+        background-image: linear-gradient(rgba(23, 23, 26, 0.92), rgba(23, 23, 26, 0.92)), url('@/assets/img/login-bg.jpg');
+    }
+
     .login {
         position: absolute;
         top: 50%;
@@ -82,7 +89,7 @@ const systemRecordNo = computed(() => {
             height: 100%;
             padding: 40px 30px 30px;
             box-shadow: 0 0 8px 1px $color-fill-2;
-            background-color: #fff;
+            background-color: $color-bg-2;
 
             .login_title {
                 margin-bottom: $margin-text;

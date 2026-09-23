@@ -129,11 +129,11 @@ const logoStyle = computed(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f0f0f0;
-    color: #666;
+    background-color: $color-fill-2;
+    color: $color-text-3;
     font-size: 12px;
     font-weight: bold;
-    border: 1px solid #ddd;
+    border: 1px solid $color-border-2;
     border-radius: 4px;
     text-align: center;
   }
