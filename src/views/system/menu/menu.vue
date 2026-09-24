@@ -681,7 +681,7 @@ const onIsLink = (is: boolean) => {
     // 非外链
     if (!is) {
         // 关联iframe和link
-        addFrom.value.iframe = false;
+        addFrom.value.iframe = 0;
         addFrom.value.link = "";
         addFrom.value.component = "";
     } else {
