@@ -114,7 +114,7 @@
         </a-modal>
 
         <a-drawer :visible="drawerOpen" :width="layoutMode.width" @ok="drawerOk" @cancel="drawerCancel">
-            <template #title> 分配权限 </template>
+            <template #title> 分配权限 - {{ currentRow?.name }} </template>
             <div>
                 <a-card>
                     <a-row :gutter="24" justify="center">
@@ -133,9 +133,10 @@
                             </a-switch>
                         </a-col>
                         <a-col :span="8">
-                            <a-tooltip content="权限树的父子节点独立，因为若节点关联，父节点会存在半选情况，半选节点的ID不会返回，会导致菜单无法渲染">
-                                <span>父子关联 <icon-question-circle-fill /></span>
+                            <a-tooltip content="开启后勾选/取消父节点时，子孙节点自动联动。保持父子独立可避免半选节点ID不返回导致菜单无法渲染，故联动由前端手动级联实现">
+                                <span class="text-right-gap">父子联动 <icon-question-circle-fill /></span>
                             </a-tooltip>
+                            <a-switch type="round" v-model="treeSwitch.cascade" />
                         </a-col>
                     </a-row>
                 </a-card>
@@ -145,7 +146,7 @@
                     title: 'i18n',
                     children: 'children'
                 }" :check-strictly="true" :checkable="true" :show-line="true" :unmount-on-close="true"
-                    v-model:checked-keys="permissionKeys" :data="permissionTree" />
+                    v-model:checked-keys="permissionKeys" :data="permissionTree" @check="onPermissionCheck" />
             </div>
         </a-drawer>
     </div>
@@ -362,7 +363,8 @@ const flattenRoleList = computed(() => {
 const treeRef = ref();
 const treeSwitch = ref({
     expandAll: true, // 展开全部
-    selectAll: false // 全选
+    selectAll: false, // 全选
+    cascade: false // 父子联动
 });
 // 展开全部
 const onExpandAll = (state: boolean) => {
@@ -373,11 +375,28 @@ const onSelectAll = (state: boolean) => {
     treeRef.value.checkAll(state);
 };
 
+// 父子联动：勾选/取消父节点时子孙节点同步勾选/取消（保持 check-strictly，避免半选 ID 丢失）
+const onPermissionCheck = (_keys: number[], ev: { checked?: boolean; node?: any }) => {
+    if (!treeSwitch.value.cascade || !ev?.node) return;
+    const keys = [ev.node.id];
+    const collect = (nodes: any[]) => {
+        nodes?.forEach((n: any) => {
+            keys.push(n.id);
+            if (n.children?.length) collect(n.children);
+        });
+    };
+    if (ev.node.children?.length) collect(ev.node.children);
+    const keySet = new Set(permissionKeys.value);
+    keys.forEach((k) => (ev.checked ? keySet.add(k) : keySet.delete(k)));
+    permissionKeys.value = [...keySet];
+};
+
 // 重置节点操作开关
 const treeSwitchReset = () => {
     treeSwitch.value = {
         expandAll: true, // 固定
-        selectAll: false // 全选
+        selectAll: false, // 全选
+        cascade: false // 父子联动
     };
 };
 const permissionTree = ref<ConvertedRouteItem[]>([]);
