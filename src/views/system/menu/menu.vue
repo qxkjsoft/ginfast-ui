@@ -346,6 +346,17 @@
             :menu-name="currentMenuRecord?.title" @success="onApiPermissionSuccess"
             :showSelected="currentMenuRecord?.apis?.length > 0" />
 
+        <!-- 导出模式选择对话框 -->
+        <a-modal v-model:visible="exportModeVisible" title="选择导出模式" :footer="false" :mask-closable="false" :esc-to-close="false">
+            <div class="import-mode-content">
+                <p>请选择菜单导出模式：导出（含子节点）会包含勾选菜单及其所有下级，仅导出勾选节点只导出勾选的菜单本身。</p>
+                <a-space :size="20" class="import-mode-buttons">
+                    <a-button type="primary" @click="onExportWithChildren">导出（含子节点）</a-button>
+                    <a-button @click="onExportCheckedOnly">仅导出勾选节点</a-button>
+                </a-space>
+            </div>
+        </a-modal>
+
         <!-- 导入模式选择对话框 -->
         <a-modal v-model:visible="importModeVisible" title="选择导入模式" :footer="false" :mask-closable="false" :esc-to-close="false">
             <div class="import-mode-content">
@@ -863,15 +874,32 @@ const onApiPermissionSuccess = () => {
 
 
 
-// 导出菜单
-const onExport = async () => {
-    //console.log(selectedKeys.value);
+// 导出菜单 - 校验勾选后打开导出模式选择弹窗
+const exportModeVisible = ref(false);
+const onExport = () => {
     if (selectedKeys.value.length === 0) {
         arcoMessage("warning", "请选择要导出的菜单");
         return;
     }
+    exportModeVisible.value = true;
+};
+
+// 导出（含子节点）：勾选菜单及其所有下级一并导出
+const onExportWithChildren = () => {
+    exportModeVisible.value = false;
+    performExport(true);
+};
+
+// 仅导出勾选节点：只导出勾选的菜单本身，不含下级
+const onExportCheckedOnly = () => {
+    exportModeVisible.value = false;
+    performExport(false);
+};
+
+// 执行导出下载
+const performExport = async (includeChildren: boolean) => {
     try {
-        const response: any = await exportMenuAPI({ menuIds: selectedKeys.value });
+        const response: any = await exportMenuAPI({ menuIds: selectedKeys.value, includeChildren });
 
         // 创建下载链接
         const blob = new Blob([response], { type: 'application/json' });

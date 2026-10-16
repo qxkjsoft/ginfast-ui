@@ -142,7 +142,7 @@ export const deleteMenusAPI = (menuIds: number[]) => {
 
 
 
-// 导出菜单
+// 导出菜单（params: { menuIds: number[], includeChildren?: boolean }；includeChildren 为 false 时仅导出勾选节点本身，默认含所有子级）
 export const exportMenuAPI = (params: any) => {
     return http.request("get", baseUrlApi("sysMenu/export"), {
         params,
