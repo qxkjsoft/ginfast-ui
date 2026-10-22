@@ -343,8 +343,7 @@
 
         <!-- API权限分配组件 -->
         <s-api-permission v-model:visible="apiPermissionVisible" :menu-id="currentMenuRecord?.id"
-            :menu-name="currentMenuRecord?.title" @success="onApiPermissionSuccess"
-            :showSelected="currentMenuRecord?.apis?.length > 0" />
+            :menu-name="currentMenuRecord?.title" @success="onApiPermissionSuccess" />
 
         <!-- 导出模式选择对话框 -->
         <a-modal v-model:visible="exportModeVisible" title="选择导出模式" :footer="false" :mask-closable="false" :esc-to-close="false">
@@ -358,9 +357,30 @@
         </a-modal>
 
         <!-- 导入模式选择对话框 -->
-        <a-modal v-model:visible="importModeVisible" title="选择导入模式" :footer="false" :mask-closable="false" :esc-to-close="false">
+        <a-modal v-model:visible="importModeVisible" title="选择导入模式" :footer="false" :mask-closable="false"
+            :esc-to-close="false" width="520px">
             <div class="import-mode-content">
-                <p>请选择菜单导入模式：覆盖导入只添加不存在的数据，普通导入全部新建。</p>
+                <p class="import-mode-intro">请选择菜单导入模式：</p>
+                <div class="mode-card">
+                    <div class="mode-card-title">覆盖导入</div>
+                    <ul>
+                        <li><b>逐条匹配：</b>目录/菜单按"路由路径"、按钮按"权限标识"在数据库中查找已有记录</li>
+                        <li><b>已存在则跳过：</b>匹配到时不创建、不修改，保持原样，其子级会挂到该已有菜单下继续导入</li>
+                        <li><b>缺失才新建：</b>仅创建数据库中不存在的菜单（生成全新 ID，层级按导入文件重建）</li>
+                        <li><b>适用场景：</b>在现有菜单基础上增量补充、合并导入文件</li>
+                    </ul>
+                </div>
+                <div class="mode-card">
+                    <div class="mode-card-title">普通导入</div>
+                    <ul>
+                        <li><b>先查重：</b>导入前检查库中是否已存在相同路由路径（目录/菜单）或相同权限标识（按钮），如有将报错中止，不会导入任何数据</li>
+                        <li><b>全部新建：</b>检查通过后，文件中所有菜单都以全新 ID 创建，父子层级按导入文件重建；不删除、不修改任何已有菜单</li>
+                        <li><b>适用场景：</b>适合导入到空菜单库，或导入文件与当前菜单数据无重叠时使用</li>
+                    </ul>
+                </div>
+                <p class="import-mode-common">
+                    两种模式均会同步补建缺失的 API（按"路径+请求方式"判重）及菜单-API 关联；整个过程在单个事务中执行，任一步失败整体回滚。
+                </p>
                 <a-space :size="20" class="import-mode-buttons">
                     <a-button type="primary" @click="onImportOverwrite">覆盖导入</a-button>
                     <a-button @click="onImportNormal">普通导入</a-button>
@@ -859,16 +879,19 @@ const onBatchDelete = () => {
 const apiPermissionVisible = ref(false);
 const currentMenuRecord = ref<any>(null);
 
+// 抽屉关闭后清空当前菜单记录
+watch(apiPermissionVisible, val => {
+    if (!val) currentMenuRecord.value = null;
+});
+
 // 分配API权限
 const onAssignApi = (record: any) => {
     currentMenuRecord.value = record;
     apiPermissionVisible.value = true;
 };
 
-// API权限分配成功回调
+// API权限分配/移除成功回调（组件内已有轻提示）
 const onApiPermissionSuccess = () => {
-    arcoMessage("success", "API权限分配成功");
-    currentMenuRecord.value = null;
     getMenuList();
 };
 
@@ -1080,11 +1103,51 @@ onUnmounted(() => {
     padding: 20px 0;
     text-align: center;
 
-    p {
-        margin-bottom: 20px;
+    .import-mode-intro {
+        margin-bottom: 12px;
         color: var(--color-text-1);
         font-size: 14px;
         line-height: 1.6;
+        text-align: left;
+    }
+
+    .mode-card {
+        border: 1px solid var(--color-border-2);
+        border-radius: 4px;
+        padding: 12px 16px;
+        margin-bottom: 12px;
+        text-align: left;
+
+        .mode-card-title {
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-text-1);
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 18px;
+
+            li {
+                font-size: 12px;
+                line-height: 1.8;
+                color: var(--color-text-2);
+
+                b {
+                    font-weight: 600;
+                    color: var(--color-text-1);
+                }
+            }
+        }
+    }
+
+    .import-mode-common {
+        margin-bottom: 16px;
+        font-size: 12px;
+        line-height: 1.6;
+        color: var(--color-text-3);
+        text-align: left;
     }
 
     .import-mode-buttons {
