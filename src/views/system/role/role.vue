@@ -133,10 +133,13 @@
                             </a-switch>
                         </a-col>
                         <a-col :span="8">
-                            <a-tooltip content="开启后勾选/取消父节点时，子孙节点自动联动。保持父子独立可避免半选节点ID不返回导致菜单无法渲染，故联动由前端手动级联实现">
+                            <a-tooltip content="开启后：勾选父节点时子孙自动联动勾选/取消；勾选子节点时自动补全其全部父级（父级 ID 不返回会导致菜单无法渲染）；取消子节点不影响父级。保持父子独立可避免半选节点 ID 丢失，故联动由前端手动级联实现">
                                 <span class="text-right-gap">父子联动 <icon-question-circle-fill /></span>
                             </a-tooltip>
-                            <a-switch type="round" v-model="treeSwitch.cascade" />
+                            <a-switch type="round" v-model="treeSwitch.cascade">
+                                <template #checked> 是 </template>
+                                <template #unchecked> 否 </template>
+                            </a-switch>
                         </a-col>
                     </a-row>
                 </a-card>
@@ -375,7 +378,20 @@ const onSelectAll = (state: boolean) => {
     treeRef.value.checkAll(state);
 };
 
-// 父子联动：勾选/取消父节点时子孙节点同步勾选/取消（保持 check-strictly，避免半选 ID 丢失）
+// 收集指定节点的全部祖先节点 ID（父级 ID 不随勾选返回会导致菜单无法渲染）
+const collectAncestorIds = (nodes: any[], targetId: number, ancestors: number[] = []): number[] | null => {
+    for (const n of nodes) {
+        if (n.id === targetId) return ancestors;
+        if (n.children?.length) {
+            const found = collectAncestorIds(n.children, targetId, [...ancestors, n.id]);
+            if (found) return found;
+        }
+    }
+    return null;
+};
+
+// 父子联动：勾选/取消父节点时子孙节点同步勾选/取消；勾选子节点时向上补全全部父级；
+// 取消子节点不影响父级（避免误清"页面有权限、按钮不给"的存量配置）。保持 check-strictly，避免半选 ID 丢失
 const onPermissionCheck = (_keys: number[], ev: { checked?: boolean; node?: any }) => {
     if (!treeSwitch.value.cascade || !ev?.node) return;
     const keys = [ev.node.id];
@@ -386,6 +402,9 @@ const onPermissionCheck = (_keys: number[], ev: { checked?: boolean; node?: any 
         });
     };
     if (ev.node.children?.length) collect(ev.node.children);
+    if (ev.checked) {
+        collectAncestorIds(permissionTree.value, ev.node.id)?.forEach((id) => keys.push(id));
+    }
     const keySet = new Set(permissionKeys.value);
     keys.forEach((k) => (ev.checked ? keySet.add(k) : keySet.delete(k)));
     permissionKeys.value = [...keySet];
