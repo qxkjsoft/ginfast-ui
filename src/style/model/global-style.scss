@@ -44,3 +44,9 @@
   align-items: center;
   justify-content: center;
 }
+
+// arco 2.58+ a-space 间距改为容器 gap，不再产生尾部 margin，
+// 列表页查询区（a-space wrap）与紧邻表格之间的 8px 间距在此补回
+.arco-space-wrap + .arco-table {
+  margin-top: 8px;
+}

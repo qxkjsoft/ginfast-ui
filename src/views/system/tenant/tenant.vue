@@ -384,4 +384,10 @@ export default {
 .general-card {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+
+// arco 2.58+ a-space 尾部不再有 margin，查询按钮行与下方表格的间距在此补回
+// （此处 a-space 与 a-table 隔着 a-row/a-col 包裹层，全局相邻选择器覆盖不到）
+:deep(.arco-space-wrap) {
+    margin-bottom: 8px;
+}
 </style>

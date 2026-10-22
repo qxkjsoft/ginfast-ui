@@ -17,5 +17,8 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  // arco 2.58+ a-space 间距改为容器 gap，不再产生尾部 margin，工具栏自身换行与同表格的间距在此补回
+  row-gap: 8px;
+  margin-bottom: 8px;
 }
 </style>
