@@ -18,10 +18,13 @@
                         </a-space>
                     </a-col>
                     <a-col :span="12" style="text-align: right">
-                        <a-button type="primary" size="small" @click="openAddModal">
-                            <template #icon><icon-plus /></template>
-                            添加API权限
-                        </a-button>
+                        <a-space>
+                            <a-button size="small" @click="openCopyModal">从其他菜单导入</a-button>
+                            <a-button type="primary" size="small" @click="openAddModal">
+                                <template #icon><icon-plus /></template>
+                                添加API权限
+                            </a-button>
+                        </a-space>
                     </a-col>
                 </a-row>
             </a-card>
@@ -60,6 +63,10 @@
             <!-- 添加API权限弹窗 -->
             <s-api-select-modal v-model:visible="addModalVisible" :menu-id="menuIdRef" :menu-name="menuName"
                 @success="onAddSuccess" />
+
+            <!-- 从其他菜单导入API权限弹窗 -->
+            <s-api-copy-modal v-model:visible="copyModalVisible" :menu-id="menuIdRef" :menu-name="menuName"
+                @success="onCopySuccess" />
         </div>
     </a-drawer>
 </template>
@@ -69,6 +76,7 @@ import { getSysApiListAPI, setMenuApisAPI, type SysApiItem } from "@/api/sysapi"
 import { useDevicesSize } from "@/hooks/useDevicesSize";
 import { formatTime } from "@/globals";
 import SApiSelectModal from "@/components/s-api-select-modal/index.vue";
+import SApiCopyModal from "@/components/s-api-copy-modal/index.vue";
 
 const { isMobile } = useDevicesSize();
 const layoutMode = computed(() => {
@@ -131,6 +139,9 @@ const rowSelection = ref({
 // 添加弹窗显示状态
 const addModalVisible = ref(false);
 
+// 导入弹窗显示状态
+const copyModalVisible = ref(false);
+
 // 加载已分配API列表（不传分页参数，后端返回全量）
 const loadAssignedList = async () => {
     if (!menuIdRef.value) return;
@@ -155,8 +166,23 @@ const openAddModal = () => {
     addModalVisible.value = true;
 };
 
+// 打开导入弹窗
+const openCopyModal = () => {
+    if (!menuIdRef.value) {
+        arcoMessage("error", "菜单ID不能为空");
+        return;
+    }
+    copyModalVisible.value = true;
+};
+
 // 添加成功：刷新已分配列表并通知父组件
 const onAddSuccess = () => {
+    emit("success");
+    loadAssignedList();
+};
+
+// 导入成功：刷新已分配列表并通知父组件
+const onCopySuccess = () => {
     emit("success");
     loadAssignedList();
 };
@@ -247,6 +273,7 @@ watch(
             assignedList.value = [];
             selectedIds.value = [];
             addModalVisible.value = false;
+            copyModalVisible.value = false;
             loadAssignedList();
         }
     }

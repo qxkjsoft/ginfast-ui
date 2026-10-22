@@ -75,7 +75,7 @@
                 :bordered="{ cell: true }" show-empty-tree :pagination="false" size="medium"
                 :scroll="{ x: '100%', y: '100%' }">
                 <template #columns>
-                    <a-table-column title="菜单名称" :width="150" tooltip ellipsis>
+                    <a-table-column title="菜单名称" :width="200" tooltip ellipsis>
                         <template #cell="{ record }">
                             <a-space>
                                 <div>{{ $t(`menu.${record.title}`) }}</div>
