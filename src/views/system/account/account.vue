@@ -584,6 +584,18 @@ onMounted(() => {
     getRole();
 });
 
+// keep-alive 缓存页重新进入时刷新部门树与角色列表，避免新增部门/角色后下拉数据不同步
+let firstActivation = true;
+onActivated(() => {
+    // 首次挂载时 onMounted 已加载过，跳过避免重复请求
+    if (firstActivation) {
+        firstActivation = false;
+        return;
+    }
+    getDivision();
+    getRole();
+});
+
 </script>
 
 <style lang="scss" scoped>
