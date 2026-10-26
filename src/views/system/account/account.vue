@@ -46,7 +46,8 @@
 
                         <a-table row-key="id" :data="accountList" :bordered="{ cell: true }" :loading="loading"
                             :scroll="{ x: '120%', y: '85%' }" :pagination="pagination" :selected-keys="selectedKeys"
-                            @select="select" @select-all="selectAll" @page-change="handlePageChange">
+                            @select="select" @select-all="selectAll" @page-change="handlePageChange"
+                            @page-size-change="handlePageSizeChange">
                             <template #columns>
                                 <a-table-column title="ID" data-index="id" :width="70" align="center"></a-table-column>
                                 <a-table-column title="用户名称" data-index="userName" :width="150"></a-table-column>
@@ -449,6 +450,13 @@ const selectAll = (state: boolean) => {
 // 分页变化事件处理
 const handlePageChange = (page: number) => {
     pagination.value.current = page;
+    getAccount();
+};
+
+// 每页条数变化事件处理
+const handlePageSizeChange = (pageSize: number) => {
+    pagination.value.pageSize = pageSize;
+    pagination.value.current = 1;
     getAccount();
 };
 
