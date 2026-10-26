@@ -31,6 +31,10 @@
                 </template>
                 <template #right>
                     <a-space wrap>
+                        <a-tooltip content="开启后：勾选父级自动勾选其全部子级；勾选子级自动勾选其全部祖先级；取消勾选对称联动">
+                            <span>父子联动 <icon-question-circle-fill /></span>
+                        </a-tooltip>
+                        <a-switch type="round" v-model="menuLinkage" />
                         <a-button type="primary" @click="onAdd" v-hasPerm="['system:menu:add']">
                             <template #icon><icon-plus /></template>
                             <span>新增</span>
@@ -71,6 +75,7 @@
             </s-layout-tools>
             <!-- 修改表格数据源为displayMenuList -->
             <a-table ref="tableRef" :data="displayMenuList" :loading="loading" row-key="id" column-resizable
+                @select="onTableSelect"
                 :row-selection="{ type: 'checkbox', showCheckedAll: true }" v-model:selectedKeys="selectedKeys"
                 :bordered="{ cell: true }" show-empty-tree :pagination="false" size="medium"
                 :scroll="{ x: '100%', y: '100%' }">
@@ -506,6 +511,57 @@ const selectedKeys = ref<number[]>([]);
 const allMenuList = ref<MenuItem[]>([]);
 // 显示的菜单数据（经过筛选）
 const displayMenuList = ref<MenuItem[]>([]);
+
+// 父子联动（默认关闭）：勾父自动全选子孙、勾子自动补全祖先，取消对称联动
+const menuLinkage = ref(false);
+
+// 在全量树中查找从根到目标节点的完整路径（过滤视图下节点 children 会被截断）
+const findPath = (nodes: MenuItem[], targetId: number, path: MenuItem[] = []): MenuItem[] | null => {
+    for (const n of nodes) {
+        const next = [...path, n];
+        if (n.id === targetId) return next;
+        if (n.children?.length) {
+            const found = findPath(n.children, targetId, next);
+            if (found) return found;
+        }
+    }
+    return null;
+};
+
+// 收集节点全部子孙 ID
+const collectDescendantIds = (node: MenuItem): number[] => {
+    const ids: number[] = [];
+    const walk = (children?: MenuItem[] | null) =>
+        children?.forEach((n) => { ids.push(n.id); walk(n.children); });
+    walk(node.children);
+    return ids;
+};
+
+// 勾选级联（rowKeys 为切换后的新集合，含 rowKey 即为勾选）：不改 Arco 原生 checkStrictly，
+// 避免关联模式下父级仅半选/只写叶子 key 导致 selectedKeys 缺 ID（导出/备份/删除依赖完整 ID）。
+// Arco 的 update:selectedKeys 在 select 事件之后发出，同步写回会被其覆盖，需 nextTick 后写回
+const onTableSelect = (rowKeys: (string | number)[], rowKey: string | number, record: MenuItem) => {
+    if (!menuLinkage.value) return;
+    const keySet = new Set(rowKeys as number[]);
+    const checked = keySet.has(Number(rowKey));
+    const path = findPath(allMenuList.value, record.id);
+    const node = path ? path[path.length - 1] : record;
+    const ancestors = path ? path.slice(0, -1) : [];
+    const descendantIds = collectDescendantIds(node);
+    if (checked) {
+        descendantIds.forEach((id) => keySet.add(id));
+        ancestors.forEach((a) => keySet.add(a.id));
+    } else {
+        // 取消节点 → 清空其全部子孙；祖先子树内再无勾选项则一并取消
+        descendantIds.forEach((id) => keySet.delete(id));
+        [...ancestors].reverse().forEach((a) => {
+            if (!collectDescendantIds(a).some((id) => keySet.has(id))) keySet.delete(a.id);
+        });
+    }
+    nextTick(() => {
+        selectedKeys.value = [...keySet];
+    });
+};
 
 // 查询功能 - 在前端完成筛选，递归查找
 const performSearch = () => {
