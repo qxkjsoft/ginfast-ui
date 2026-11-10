@@ -50,3 +50,63 @@
 .arco-space-wrap + .arco-table {
   margin-top: 8px;
 }
+
+// ============全高表格:横向滚动条贴底统一修复(自 menu.vue 局部方案上移)============
+// 触发条件:snow-inner/snow-fill 内存在设置了 scroll.y 字符串值的 a-table
+// (arco 给表格根写内联 height)。无 scroll.y 页面与弹窗表格不命中。
+.snow-inner:has(.arco-table[style*="height"]) {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  height: 100%;
+  padding-bottom: 0; // 滚动条贴住卡片底边
+
+  // 常规列表页:工具栏 + 表格直接平铺
+  > .arco-table {
+    flex: 1;
+    min-height: 0;
+  }
+
+  // sysjobs/sysjobresults 型:表格外套 a-card,高度需穿透
+  > .arco-card:has(.arco-table[style*="height"]) {
+    flex: 1;
+    min-height: 0;
+
+    > .arco-card-body {
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      height: 100%;
+    }
+  }
+}
+
+// arco 表格内部链条闭合:.arco-spin(inline-block)与 .arco-scrollbar 包裹层是两个断点
+.snow-inner,
+.snow-fill {
+  .arco-table[style*="height"] > .arco-spin {
+    display: flex;
+    flex-direction: column;
+    height: 100%; // 含分页的页面:分页是 spin 的自动高度子项,自动沉底
+  }
+
+  .arco-table[style*="height"] .arco-table-container {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .arco-table[style*="height"] .arco-table-body {
+    flex: 1;
+  }
+
+  .arco-table[style*="height"] .arco-scrollbar:has(> .arco-scrollbar-container.arco-table-body) {
+    flex: 1;
+    min-height: 0;
+  }
+}
+
+// affix 型(snow-fill > .container 已是 flex column):表格直接撑满剩余空间
+.snow-fill .container > .arco-table[style*="height"] {
+  flex: 1;
+  min-height: 0;
+}

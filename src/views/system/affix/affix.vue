@@ -33,7 +33,7 @@
                 </a-button>
             </a-space>
             <a-table row-key="id" :data="affixList" :bordered="{ cell: true }" :loading="loading"
-                :scroll="{ x: '100%', y: '75%' }" :pagination="pagination" @page-change="handlePageChange"
+                :scroll="{ x: '100%', y: '100%' }" :pagination="pagination" @page-change="handlePageChange"
                 @page-size-change="handlePageSizeChange">
                 <template #columns>
                     <a-table-column title="ID" data-index="id" :width="70" align="center"></a-table-column>
