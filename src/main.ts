@@ -19,12 +19,6 @@ import ArcoVueIcon from "@arco-design/web-vue/es/icon";
 import '@arco-themes/vue-gi-demo/css/arco.css'; // 自定义主题
 import i18n from "@/lang/index";
 
-
-// 表格滚动条使用独立轨道，自动预留空间，避免遮挡末行内容。
-Object.assign(Table.props.scrollbar, {
-    default: () => ({ type: "track" })
-});
-
 const app = createApp(App);
 app.use(pinia);
 app.use(router);
