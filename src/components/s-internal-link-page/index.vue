@@ -4,7 +4,7 @@
       <div v-if="!isLoading" class="loading-page">
         <div class="dc-loader"></div>
       </div>
-      <iframe v-show="isLoading" :src="link" class="iframe-size" id="internalLinkPage"> </iframe>
+      <iframe v-show="isLoading" :src="link" :title="title" class="iframe-size" @load="isLoading = true"> </iframe>
     </div>
   </div>
 </template>
@@ -14,18 +14,11 @@ import { useRoute } from "vue-router";
 
 const route = useRoute();
 
-const link = ref<string>(route.meta.link as string);
+// 缓存标签页各自保留地址，避免跟随全局路由切换。
+const link = route.meta.link as string;
+const title = String(route.meta.title || "内嵌窗口");
 
 const isLoading = ref(false); // iframe是否加载完成
-onMounted(() => {
-  let iframe = document.getElementById("internalLinkPage") as HTMLElement;
-  if (iframe) {
-    // 加载完成
-    iframe.onload = () => {
-      isLoading.value = true;
-    };
-  }
-});
 </script>
 
 <style lang="scss" scoped>

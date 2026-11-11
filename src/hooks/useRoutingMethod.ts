@@ -59,7 +59,7 @@ export const useRoutingMethod = () => {
   const openExternalLinks = (route: any) => {
     // 处理外链跳转
     if (route.meta.link && !route.meta.iframe) {
-      window.open(route.meta.link as string, "_blank");
+      window.open(route.meta.link as string, "_blank", "noopener,noreferrer");
     }
   };
 

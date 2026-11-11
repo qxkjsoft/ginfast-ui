@@ -329,7 +329,8 @@
                     </a-row>
                     <a-form-item field="link" label="外链路径" validate-trigger="blur"
                         v-if="addFrom.type == 2 && addFrom.isLink">
-                        <a-input v-model="addFrom.link" placeholder="请输入路由路径" allow-clear />
+                        <a-input v-model="addFrom.link" placeholder="例如 https://www.baidu.com" allow-clear
+                            @input="(value: string) => onTrim(value, 'link')" />
                     </a-form-item>
                     <a-form-item field="affix" label="全屏显示" validate-trigger="blur" v-if="addFrom.type == 2">
                         <a-switch type="round" v-model="addFrom.isFull" :checked-value="1"
