@@ -13,11 +13,16 @@ import "virtual:svg-icons-register";
 import directives from "@/directives/index";
 
 // 同步加载核心依赖
-import ArcoVue from "@arco-design/web-vue";
+import ArcoVue, { Table }  from "@arco-design/web-vue";
 import ArcoVueIcon from "@arco-design/web-vue/es/icon";
 // import "@arco-design/web-vue/dist/arco.css"; // 默认样式
 import '@arco-themes/vue-gi-demo/css/arco.css'; // 自定义主题
 import i18n from "@/lang/index";
+
+//表格统一使用原生滚动条，避免自定义轨道在分离表头下预留空白。
+Object.assign(Table.props.scrollbar, {
+    default: false
+});
 
 const app = createApp(App);
 app.use(pinia);
