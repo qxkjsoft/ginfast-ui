@@ -45,7 +45,7 @@
                         </a-space>
 
                         <a-table row-key="id" :data="accountList" :bordered="{ cell: true }" :loading="loading"
-                            :scroll="{ x: '120%', y: '100%' }" :pagination="pagination" :selected-keys="selectedKeys"
+                            :scroll="{ x: '120%', y: '85%' }" :pagination="pagination" :selected-keys="selectedKeys"
                             @select="select" @select-all="selectAll" @page-change="handlePageChange"
                             @page-size-change="handlePageSizeChange">
                             <template #columns>
@@ -626,15 +626,8 @@ onActivated(() => {
     }
 
     .right-box {
-        display: flex; // 纵向排列:搜索栏 + 全高表格(滚动条贴底)
-        flex-direction: column;
         flex: 1;
         min-width: 0; // 防止 flex 子元素溢出
-
-        > .arco-table {
-            flex: 1;
-            min-height: 0;
-        }
     }
 }
 </style>

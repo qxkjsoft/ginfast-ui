@@ -37,7 +37,7 @@
             </a-space>
 
             <a-table :data="dataList" :loading="loading" :pagination="paginationConfig"
-                :bordered="{ wrapper: true, cell: true }" :scroll="{ x: '120%', y: '100%' }" @page-change="handlePageChange"
+                :bordered="{ wrapper: true, cell: true }" :scroll="{ x: '120%' }" @page-change="handlePageChange"
                 @page-size-change="handlePageSizeChange">
                 <template #columns>
                     <a-table-column title="任务ID" data-index="id"  :width="150"  ellipsis tooltip/>

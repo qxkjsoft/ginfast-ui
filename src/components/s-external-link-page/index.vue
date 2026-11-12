@@ -4,7 +4,7 @@
       <div class="external-link-inner-page">
         <div>
           <div class="star-emoji">🌍</div>
-          <div class="docs-text">若外链未在新窗口中打开，请点击下方按钮</div>
+          <div class="docs-text">外链页面已经在新窗口中打开</div>
           <div class="to-page"><a-button type="primary" @click="openPage">立即前往</a-button></div>
         </div>
       </div>
@@ -17,7 +17,7 @@ import { useRoute } from "vue-router";
 
 const route = useRoute();
 const openPage = () => {
-  window.open(route.meta.link as string, "_blank", "noopener,noreferrer");
+  window.open(route.meta.link as string, "_blank");
 };
 </script>
 
